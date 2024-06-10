@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Cotización - REI Web Assistant{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col">
+        <h2>Cotización</h2>
+        <p>Si estas teniendo problemas, haz una <a href="https://drive.google.com/drive/folders/1NyXQToIkYCXBBgqyMVDRBrRn-EcCwfCp?usp=sharing">consulta manual.</a></p>
+        <form method="post" action="/cotizacion" class="form-group">
+            <input class="form-control mr-sm-2" type="search" placeholder="Buscar productos..." aria-label="Search" name="search" value="{{ search_text }}">
+        </form>
+    </div>
+</div>
+
+<hr>
+
+<div class="row">
+    {% for product in products %}
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-img-top-container">
+                <img src="https://scontent.fgdl1-3.fna.fbcdn.net/v/t39.30808-6/359506994_661510176014030_7376360735385234611_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=5f2048&_nc_ohc=IHBBIbCWkSoQ7kNvgFLqUvr&_nc_ht=scontent.fgdl1-3.fna&oh=00_AYBftN76IQanGEeFcmvJYGhkN-VXY2XuOS1Ch0sp95axRA&oe=666C0780" class="supplier.card-img-top-container phone-image" alt="...">
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">{{ product[1] }}</h5>
+                <p class="card-text"><b>Proveedor:</b> {{ product[2] }}</p>
+                <p class="card-text"><b>Precio:</b> ${{ product[3] }}</p>
+                {% if product[3] > 600 %}
+                <p class="card-text"><b>Cotización:</b> ${{ product[3] * 2 }}</p>
+                {% else %}
+                <p class="card-text"><b>Cotización:</b> ${{ product[3] + 400 }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Marcas - REI Web Assistant{% endblock %}
+
+{% block content %}
+<h2>Marcas de Celulares</h2>
+<p>Las consultas pueden tardar debido a que estamos usando la <a href="https://github.com/azharimm/phone-specs-api">Phone Specifications API</a>.</p>
+<!-- Barra de búsqueda -->
+<form method="GET" action="/marcas">
+    <div class="form-group">
+        <input type="text" name="search" class="form-control" placeholder="Buscar por nombre de marca" value="{{ request.args.get('search', '') }}">
+    </div>
+</form>
+
+<!-- Tabla de marcas -->
+<table class="table table-striped mt-3">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Cantidad de Dispositivos</th>
+            <th>Detalle</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for brand in brands %}
+        <tr>
+            <td>{{ brand.brand_name }}</td>
+            <td>{{ brand.device_count }}</td>
+            <td><a href="{{ url_for('information', brand_slug=brand.brand_slug) }}" class="btn btn-primary">Info</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
