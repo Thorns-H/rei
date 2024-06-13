@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import requests
 import os
 
-from modules.db_connection import get_products_by_name, new_order, get_unfinished_orders, delete_order
+from modules.db_connection import get_connection, get_products_by_name, new_order, get_all_orders, delete_order
 
 if __name__ == '__main__':
 
@@ -98,14 +98,56 @@ if __name__ == '__main__':
             new_order(name, service, notes, cost)
             return redirect(url_for('orders'))
 
-        orders = get_unfinished_orders()
+        orders = get_all_orders()
         return render_template('orders.html', orders=orders)
+    
+    @app.route('/ordenes/validar/<int:order_id>', methods=['POST'])
+    def validate_order(order_id):
+        connection = get_connection()
 
+        with connection.cursor() as cursor:
+            cursor.execute("UPDATE orden_productos SET Estatus = 'Entregado' WHERE ID = %s", (order_id,))
+
+        connection.commit()
+        connection.close()
+
+        return redirect(url_for('orders'))
 
     @app.route('/ordenes/eliminar/<int:order_id>', methods=['POST'])
     def delete_order_route(order_id):
         delete_order(order_id)
         return redirect(url_for('orders'))
+    
+    @app.route('/ordenes/editar/<int:order_id>', methods=['GET', 'POST'])
+    def edit_order(order_id):
+        connection = get_connection()
+        
+        if request.method == 'POST':
+            name = request.form.get('name')
+            service = request.form.get('service')
+            notes = request.form.get('notes')
+            cost = float(request.form.get('cost'))
+
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE orden_productos
+                    SET Nombre = %s, Servicio = %s, Notas = %s, Costo = %s
+                    WHERE ID = %s
+                """, (name, service, notes, cost, order_id))
+
+            connection.commit()
+            connection.close()
+
+            return redirect(url_for('orders'))
+        
+        else:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT * FROM orden_productos WHERE ID = %s", (order_id,))
+                order = cursor.fetchone()
+
+            connection.close()
+            
+            return render_template('edit_order.html', order=order)
 
     try:
         app.run(host = '0.0.0.0', port = 5050, debug = True)

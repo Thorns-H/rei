@@ -7,9 +7,6 @@
 <p>Aquí puedes crear, consultar y eliminar ordenes.</p>
 <!-- Formulario para crear una nueva orden -->
 <div class="card mb-4">
-    <div class="card-header">
-        Crear Nueva Orden
-    </div>
     <div class="card-body">
         <form action="/ordenes" method="post">
             <div class="form-group">
@@ -45,15 +42,16 @@
                 <p class="card-text"><strong>Servicio:</strong> {{ order[4] }}</p>
                 <p class="card-text"><strong>Notas:</strong> {{ order[5] }}</p>
                 <p class="card-text"><strong>Costo:</strong> <span style="color: green;">${{ order[6] }}</span></p>
-                <p class="card-text"><strong>Estatus:</strong> <span style="color: red;">{{ order[7] }}</span></p>
-                <form action="/ordenes/eliminar/{{ order[0] }}" method="post" style="display:inline-block;">
-                    <button type="submit" class="btn btn-success btn-sm">Validar</button>
-                    
-                </form>
+                <p class="card-text"><strong>Estatus:</strong> 
+                    <span style="color: {% if order[7] == 'Pendiente' %}red{% elif order[7] == 'Entregado' %}green{% else %}black{% endif %};">{{ order[7] }}</span>
+                </p>
                 <form action="/ordenes/validar/{{ order[0] }}" method="post" style="display:inline-block;">
+                    <button type="submit" class="btn btn-success btn-sm">Validar</button>
+                </form>
+                <form action="/ordenes/editar/{{ order[0] }}" method="get" style="display:inline-block;">
                     <button type="submit" class="btn btn-primary btn-sm">Editar</button>
                 </form>
-                <form action="/ordenes/editar/{{ order[0] }}" method="post" style="display:inline-block;">
+                <form action="/ordenes/eliminar/{{ order[0] }}" method="post" style="display:inline-block;">
                     <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
                 </form>
             </div>

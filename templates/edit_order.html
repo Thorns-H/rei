@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Orden - REI Web Assistant{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header">
+        Editar Orden
+    </div>
+    <div class="card-body">
+        <form action="/ordenes/editar/{{ order[0] }}" method="post">
+            <div class="form-group">
+                <label for="name">Nombre del Cliente</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ order[1] }}" required>
+            </div>
+            <div class="form-group">
+                <label for="service">Servicio</label>
+                <input type="text" class="form-control" id="service" name="service" value="{{ order[4] }}" required>
+            </div>
+            <div class="form-group">
+                <label for="notes">Notas</label>
+                <textarea class="form-control" id="notes" name="notes">{{ order[5] }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="cost">Costo</label>
+                <input type="number" class="form-control" id="cost" name="cost" step="0.01" value="{{ order[6] }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

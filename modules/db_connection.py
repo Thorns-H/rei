@@ -54,6 +54,20 @@ def new_order(name: str, service: str, notes: str, cost: float) -> bool:
         print(f"Error ({e}) at modules/db_connection func 'new_order'")
         return False
     
+def get_all_orders() -> tuple:
+    try:
+        connection = get_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM orden_productos")
+            orders = cursor.fetchall()
+
+        connection.close()
+
+        return orders
+    except Exception as e:
+        print(f"Error ({e}) at modules/db_connection func 'get_orders'")
+    
 def get_unfinished_orders() -> tuple:
     try:
         connection = get_connection()
