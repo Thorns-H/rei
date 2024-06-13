@@ -3,12 +3,12 @@
     en este apartado, recomiendo usar .env en todo momento.
 """
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from dotenv import load_dotenv
 import requests
 import os
 
-from modules.db_connection import get_connection, get_products_by_name, new_order, get_all_orders, delete_order
+from modules.db_connection import get_connection, get_products_by_name, new_order, get_all_orders, get_unfinished_orders, delete_order
 
 if __name__ == '__main__':
 
@@ -88,6 +88,11 @@ if __name__ == '__main__':
 
         return render_template('phones.html', title=title, brand_slug=brand_slug, phones=paginated_phones, current_page=page, last_page=(len(all_phones) // phones_per_page) + 1, search_query=search_query)
     
+    @app.route('/ordenes/todas', methods=['GET'])
+    def all_orders():
+        orders = get_all_orders()
+        return render_template('all_orders.html', orders=orders)
+
     @app.route('/ordenes', methods=['GET', 'POST'])
     def orders():
         if request.method == 'POST':
@@ -98,7 +103,7 @@ if __name__ == '__main__':
             new_order(name, service, notes, cost)
             return redirect(url_for('orders'))
 
-        orders = get_all_orders()
+        orders = get_unfinished_orders()
         return render_template('orders.html', orders=orders)
     
     @app.route('/ordenes/validar/<int:order_id>', methods=['POST'])
@@ -146,8 +151,23 @@ if __name__ == '__main__':
                 order = cursor.fetchone()
 
             connection.close()
-            
+
             return render_template('edit_order.html', order=order)
+        
+    @app.route('/api/order-stats', methods=['GET'])
+    def order_stats():
+        connection = get_connection()
+        cursor = connection.cursor()
+        
+        cursor.execute("SELECT SUM(Costo) FROM orden_productos WHERE Estatus='Entregado'")
+        delivered_cost = cursor.fetchone()[0] or 0
+        
+        cursor.execute("SELECT SUM(Costo) FROM orden_productos WHERE Estatus='Pendiente'")
+        pending_cost = cursor.fetchone()[0] or 0
+        
+        connection.close()
+        
+        return jsonify({'delivered': delivered_cost, 'pending': pending_cost})
 
     try:
         app.run(host = '0.0.0.0', port = 5050, debug = True)

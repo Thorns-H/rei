@@ -31,6 +31,7 @@
 </div>
 
 <h2>Ordenes Pendientes</h2>
+<p>Si estas buscando una orden vieja y validada, encuentrala <a href="{{ url_for('all_orders') }}">aquí.</a></p>
 
 <!-- Cards para consultar órdenes existentes -->
 <div class="row">
@@ -43,7 +44,7 @@
                 <p class="card-text"><strong>Notas:</strong> {{ order[5] }}</p>
                 <p class="card-text"><strong>Costo:</strong> <span style="color: green;">${{ order[6] }}</span></p>
                 <p class="card-text"><strong>Estatus:</strong> 
-                    <span style="color: {% if order[7] == 'Pendiente' %}red{% elif order[7] == 'Entregado' %}green{% else %}black{% endif %};">{{ order[7] }}</span>
+                    <span style="color: red;">{{ order[7] }}</span>
                 </p>
                 <form action="/ordenes/validar/{{ order[0] }}" method="post" style="display:inline-block;">
                     <button type="submit" class="btn btn-success btn-sm">Validar</button>

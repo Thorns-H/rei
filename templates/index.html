@@ -1,7 +1,48 @@
 {% extends "base.html" %}
 
-{% block title %}Inicio - REI Web Assistant{% endblock %}
+{% block title %}Home - REI Web Assistant{% endblock %}
 
 {% block content %}
+<div class="jumbotron">
+    <h1 class="display-4">¡Bienvenido!</h1>
+    <p class="lead"></p>
+    <hr class="my-4">
+    <canvas id="orderChart" width="400" height="400"></canvas>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/api/order-stats')
+            .then(response => response.json())
+            .then(data => {
+                var ctx = document.getElementById('orderChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Entregado', 'Pendiente'],
+                        datasets: [{
+                            data: [data.delivered, data.pending],
+                            backgroundColor: ['#28a745', '#dc3545']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(tooltipItem) {
+                                        return tooltipItem.label + ': $' + tooltipItem.raw.toFixed(2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+    });
+</script>
 {% endblock %}
