@@ -5,7 +5,7 @@
 {% block content %}
 <div class="jumbotron">
     <h1 class="display-4">¡Bienvenido!</h1>
-    <p class="lead"></p>
+    <p class="lead">Este es el dashboard principal de las ganancias.</p>
     <hr class="my-4">
     <canvas id="orderChart" width="400" height="400"></canvas>
 </div>
@@ -20,10 +20,10 @@
                 new Chart(ctx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Entregado', 'Pendiente'],
+                        labels: ['Ganancia', 'Inversión', 'Pendiente'],
                         datasets: [{
-                            data: [data.delivered, data.pending],
-                            backgroundColor: ['#28a745', '#dc3545']
+                            data: [data.profit, data.invest, data.pending],
+                            backgroundColor: ['#28a745', '#ffc107', '#dc3545']
                         }]
                     },
                     options: {

@@ -14,4 +14,5 @@ CREATE TABLE Orden_Productos (
     Notas TEXT,
     Costo FLOAT(10,2) NOT NULL,
     Estatus ENUM('Cancelado', 'Pendiente', 'Entregado') NOT NULL DEFAULT 'Pendiente'
+    Inversion FLOAT(10,2) NOT NULL DEFAULT 0.0,
 );

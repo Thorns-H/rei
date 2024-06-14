@@ -126,49 +126,57 @@ if __name__ == '__main__':
     @app.route('/ordenes/editar/<int:order_id>', methods=['GET', 'POST'])
     def edit_order(order_id):
         connection = get_connection()
-        
+        cursor = connection.cursor()
+
         if request.method == 'POST':
-            name = request.form.get('name')
-            service = request.form.get('service')
-            notes = request.form.get('notes')
-            cost = float(request.form.get('cost'))
+            name = request.form['name']
+            service = request.form['service']
+            notes = request.form['notes']
+            cost = request.form['cost']
+            investment = request.form['investment']
 
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                    UPDATE orden_productos
-                    SET Nombre = %s, Servicio = %s, Notas = %s, Costo = %s
-                    WHERE ID = %s
-                """, (name, service, notes, cost, order_id))
-
+            cursor.execute("""
+                UPDATE orden_productos 
+                SET Nombre = %s, Servicio = %s, Notas = %s, Costo = %s, Inversion = %s 
+                WHERE ID = %s
+            """, (name, service, notes, cost, investment, order_id))
+            
             connection.commit()
             connection.close()
-
+            
             return redirect(url_for('orders'))
-        
+
         else:
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT * FROM orden_productos WHERE ID = %s", (order_id,))
-                order = cursor.fetchone()
-
+            cursor.execute("SELECT * FROM orden_productos WHERE ID = %s", (order_id,))
+            order = cursor.fetchone()
             connection.close()
-
+            
             return render_template('edit_order.html', order=order)
         
     @app.route('/api/order-stats', methods=['GET'])
     def order_stats():
         connection = get_connection()
         cursor = connection.cursor()
-        
+
         cursor.execute("SELECT SUM(Costo) FROM orden_productos WHERE Estatus='Entregado'")
         delivered_cost = cursor.fetchone()[0] or 0
+
+        cursor.execute("SELECT SUM(Inversion) FROM orden_productos WHERE Estatus='Entregado'")
+        delivered_investment = cursor.fetchone()[0] or 0
+
+        profit = delivered_cost - delivered_investment
         
         cursor.execute("SELECT SUM(Costo) FROM orden_productos WHERE Estatus='Pendiente'")
         pending_cost = cursor.fetchone()[0] or 0
+
+        cursor.execute("SELECT SUM(Inversion) FROM orden_productos WHERE Estatus='Pendiente'")
+        pending_investment = cursor.fetchone()[0] or 0
+
+        pending_cost = pending_cost - pending_investment
         
         connection.close()
         
-        return jsonify({'delivered': delivered_cost, 'pending': pending_cost})
-
+        return jsonify({'profit': profit, 'invest': delivered_investment + pending_investment, 'pending': pending_cost})
     try:
         app.run(host = '0.0.0.0', port = 5050, debug = True)
     except KeyboardInterrupt:
