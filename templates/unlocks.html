@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Liberaciones - REI Web Assistant{% endblock %}
+
+{% block content %}
+<script>
+    function att_unlocks() {
+        window.open("https://www.att.com.mx/desbloqueo", "_blank");
+    }
+    function telcel_unlocks() {
+        window.open("https://www.telcel.com/personas/politicas-y-codigos/desbloquear-equipos", "_blank");
+    }
+    function movistar_unlocks() {
+        window.open("https://www.movistar.com.mx/atencion-al-cliente/informacion/codigo-de-liberacion", "_blank");
+    }
+</script>
+
+<div class="row">
+    <div class="col">
+        <h2>Liberaciones</h2>
+        <p>Puedes utilizar un <a href="https://temp-mail.org/es/" target="_blank">correo temporal.</a></p>
+        
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-img-top-container">
+                <img src="{{ url_for('static', filename='images/att_logo.jpg') }}" class="supplier.card-img-top-container phone-image" alt="...">
+            </div>
+            <button onclick="att_unlocks()" class="btn btn-primary">Ir a la página</button>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-img-top-container">
+                <img src="{{ url_for('static', filename='images/telcel_logo.jpg') }}" class="supplier.card-img-top-container phone-image" alt="...">
+            </div>
+            <button onclick="telcel_unlocks()" class="btn btn-primary">Ir a la página</button>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-img-top-container">
+                <img src="{{ url_for('static', filename='images/movistar_logo.jpg') }}" class="supplier.card-img-top-container phone-image" alt="...">
+            </div>
+            <button onclick="movistar_unlocks()" class="btn btn-primary">Ir a la página</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -14,6 +14,7 @@
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">{{ order[1] }}</h5>
+                <p class="card-text"><strong>Referencia: {{ "{:06d}".format(order[0]) }}</p></strong>
                 <p class="card-text"><strong>Servicio:</strong> {{ order[4] }}</p>
                 <p class="card-text"><strong>Notas:</strong> {{ order[5] }}</p>
                 <p class="card-text"><strong>Costo:</strong> <span style="color: green;">${{ order[6] }}</span></p>
@@ -21,9 +22,6 @@
                 <p class="card-text"><strong>Estatus:</strong> 
                     <span style="color: {% if order[7] == 'Pendiente' %}red{% elif order[7] == 'Entregado' %}green{% else %}yellow{% endif %};">{{ order[7] }}</span>
                 </p>
-                <form action="" method="post" style="display:inline-block;">
-                    <button type="submit" class="btn btn-success btn-sm">Cancelar</button>
-                </form>
                 <form action="/ordenes/editar/{{ order[0] }}" method="get" style="display:inline-block;">
                     <button type="submit" class="btn btn-primary btn-sm">Editar</button>
                 </form>

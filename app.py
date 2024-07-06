@@ -32,21 +32,9 @@ if __name__ == '__main__':
     @app.route('/')
     def index() -> str:
         return render_template('index.html')
-
-    @app.route('/marcas')
-    def brands() -> str:
-        search_query = request.args.get('search', '').lower()
-        response = requests.get('http://phone-specs-api-2.azharimm.dev/brands')
-        data = response.json()
-        brands = data['data'] if data['status'] else []
-
-        if search_query:
-            brands = [brand for brand in brands if search_query in brand['brand_name'].lower()]
-
-        return render_template('brands.html', brands=brands)
     
     @app.route('/cotizacion', methods=['GET', 'POST'])
-    def price_request():
+    def price_request() -> str:
 
         if request.method == 'POST':
             search_text = request.form.get('search', '').strip()
@@ -57,36 +45,10 @@ if __name__ == '__main__':
         products = get_products_by_name(keywords)
 
         return render_template('products.html', products=products, search_text='')
-
-    @app.route('/marcas/<brand_slug>')
-    def information(brand_slug) -> str:
-        search_query = request.args.get('search', '').lower()
-        page = request.args.get('page', 1, type=int)
-
-        all_phones = []
-        response = requests.get(f'http://phone-specs-api-2.azharimm.dev/brands/{brand_slug}')
-        data = response.json()
-        
-        if data['status']:
-            title = data['data']['title']
-            current_page = data['data']['current_page']
-            last_page = data['data']['last_page']
-
-            for page_num in range(1, last_page + 1):
-                response = requests.get(f'http://phone-specs-api-2.azharimm.dev/brands/{brand_slug}?page={page_num}')
-                page_data = response.json()
-                if page_data['status']:
-                    all_phones.extend(page_data['data']['phones'])
-
-        if search_query:
-            all_phones = [phone for phone in all_phones if search_query in phone['phone_name'].lower()]
-
-        phones_per_page = 20
-        start = (page - 1) * phones_per_page
-        end = start + phones_per_page
-        paginated_phones = all_phones[start:end]
-
-        return render_template('phones.html', title=title, brand_slug=brand_slug, phones=paginated_phones, current_page=page, last_page=(len(all_phones) // phones_per_page) + 1, search_query=search_query)
+    
+    @app.route('/liberaciones', methods=['GET'])
+    def unlocks() -> str:
+        return render_template('unlocks.html')
     
     @app.route('/ordenes/todas', methods=['GET'])
     def all_orders():
@@ -100,7 +62,8 @@ if __name__ == '__main__':
             service = request.form.get('service')
             notes = request.form.get('notes', '')
             cost = float(request.form.get('cost'))
-            new_order(name, service, notes, cost)
+            invest = float(request.form.get('invest'))
+            new_order(name, service, notes, cost, invest)
             return redirect(url_for('orders'))
 
         orders = get_unfinished_orders()
@@ -111,7 +74,7 @@ if __name__ == '__main__':
         connection = get_connection()
 
         with connection.cursor() as cursor:
-            cursor.execute("UPDATE orden_productos SET Estatus = 'Entregado' WHERE ID = %s", (order_id,))
+            cursor.execute("UPDATE orden_productos SET Estatus = 'Entregado', Fecha_Entrega = NOW() WHERE ID = %s", (order_id,))
 
         connection.commit()
         connection.close()
@@ -152,6 +115,48 @@ if __name__ == '__main__':
             connection.close()
             
             return render_template('edit_order.html', order=order)
+
+    @app.route('/marcas')
+    def brands() -> str:
+        search_query = request.args.get('search', '').lower()
+        response = requests.get('http://phone-specs-api-2.azharimm.dev/brands')
+        data = response.json()
+        brands = data['data'] if data['status'] else []
+
+        if search_query:
+            brands = [brand for brand in brands if search_query in brand['brand_name'].lower()]
+
+        return render_template('brands.html', brands=brands)
+
+    @app.route('/marcas/<brand_slug>')
+    def information(brand_slug) -> str:
+        search_query = request.args.get('search', '').lower()
+        page = request.args.get('page', 1, type=int)
+
+        all_phones = []
+        response = requests.get(f'http://phone-specs-api-2.azharimm.dev/brands/{brand_slug}')
+        data = response.json()
+        
+        if data['status']:
+            title = data['data']['title']
+            current_page = data['data']['current_page']
+            last_page = data['data']['last_page']
+
+            for page_num in range(1, last_page + 1):
+                response = requests.get(f'http://phone-specs-api-2.azharimm.dev/brands/{brand_slug}?page={page_num}')
+                page_data = response.json()
+                if page_data['status']:
+                    all_phones.extend(page_data['data']['phones'])
+
+        if search_query:
+            all_phones = [phone for phone in all_phones if search_query in phone['phone_name'].lower()]
+
+        phones_per_page = 20
+        start = (page - 1) * phones_per_page
+        end = start + phones_per_page
+        paginated_phones = all_phones[start:end]
+
+        return render_template('phones.html', title=title, brand_slug=brand_slug, phones=paginated_phones, current_page=page, last_page=(len(all_phones) // phones_per_page) + 1, search_query=search_query)
         
     @app.route('/api/order-stats', methods=['GET'])
     def order_stats():
