@@ -39,12 +39,12 @@ def get_products_by_name(keywords: list) -> tuple:
     except Exception as e:
         return False
 
-def new_order(name: str, service: str, notes: str, cost: float) -> bool:
+def new_order(name: str, service: str, notes: str, cost: float, invest: float) -> bool:
     try:
         connection = get_connection()
 
         with connection.cursor() as cursor:
-            cursor.execute("INSERT INTO orden_productos(Nombre, Servicio, Notas, Costo) VALUES (%s, %s, %s, %s)", (name, service, notes, cost))
+            cursor.execute("INSERT INTO orden_productos(Nombre, Servicio, Notas, Costo, Inversion) VALUES (%s, %s, %s, %s, %s)", (name, service, notes, cost, invest))
 
         connection.commit()
         connection.close()
