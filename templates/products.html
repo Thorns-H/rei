@@ -22,6 +22,8 @@
             <div class="card-img-top-container">
                 {% if product[2] == "AT_HOME" %}
                 <img src="{{ url_for('static', filename='images/at_home_logo.jpg') }}" class="supplier.card-img-top-container phone-image" alt="...">
+                {% elif product[2] == "KBKA_SHOP" %}
+                <img src="{{ url_for('static', filename='images/kbka_shop_logo.jpg') }}" class="supplier.card-img-top-container phone-image" alt="...">
                 {% else %}
                 <img src="{{ url_for('static', filename='images/supplier_default.jpg') }}" class="supplier.card-img-top-container phone-image" alt="...">
                 {% endif %}
