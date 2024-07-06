@@ -59,7 +59,7 @@ def get_all_orders() -> tuple:
         connection = get_connection()
 
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM orden_productos")
+            cursor.execute("SELECT * FROM orden_productos ORDER BY Fecha_Emision DESC")
             orders = cursor.fetchall()
 
         connection.close()
@@ -73,7 +73,7 @@ def get_unfinished_orders() -> tuple:
         connection = get_connection()
 
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM orden_productos WHERE Estatus = 'Pendiente'")
+            cursor.execute("SELECT * FROM orden_productos WHERE Estatus = 'Pendiente' ORDER BY Fecha_Emision DESC")
             orders = cursor.fetchall()
 
         connection.close()
@@ -96,3 +96,17 @@ def delete_order(order_id: int) -> bool:
     except Exception as e:
         print(f"Error ({e}) at modules/db_connection func 'delete_order'")
         return False
+    
+def get_user(username: str) -> str:
+    try:
+        connection = get_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT * FROM usuario WHERE Nombre_Usuario = '{username}'")
+            user = cursor.fetchone()
+
+        connection.close()
+
+        return user
+    except Exception as e:
+        print(f"Error ({e}) at modules/db_connection func 'get_user'")

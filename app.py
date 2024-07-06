@@ -4,11 +4,17 @@
 """
 
 from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_caching import Cache
 from dotenv import load_dotenv
+import hashlib
 import requests
 import os
 
-from modules.db_connection import get_connection, get_products_by_name, new_order, get_all_orders, get_unfinished_orders, delete_order
+from modules.db_connection import get_connection
+from modules.db_connection import get_products_by_name
+from modules.db_connection import new_order, get_all_orders, get_unfinished_orders, delete_order
+from modules.db_connection import get_user
 
 if __name__ == '__main__':
 
@@ -16,6 +22,35 @@ if __name__ == '__main__':
 
     app = Flask(__name__)
     app.secret_key = os.getenv("FLASK_SECRET_KEY")
+
+    cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.login_view = 'login'
+
+    class User(UserMixin):
+        def __init__(self, user_id, username, name, photo):
+            self.id = user_id
+            self.username = username
+            self.name = name
+            self.photo = photo
+                
+    @login_manager.user_loader
+    def load_user(user_id):
+        connection = get_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM usuario WHERE ID = %s", (user_id,))
+            user = cursor.fetchone()
+
+        connection.close()
+
+        if user:
+            return User(user[0], user[1], user[3], user[4])
+        else:
+            return None
+
 
     """
         El parámetro de host en 0.0.0.0 hará que puedan ver el render de las rutas de la
@@ -30,10 +65,35 @@ if __name__ == '__main__':
     """
 
     @app.route('/')
+    @login_required
     def index() -> str:
         return render_template('index.html')
     
+    @app.route('/login', methods=['GET', 'POST'])
+    def login() -> str:
+        if request.method == 'GET':
+            return render_template('login.html')
+        else:
+            username = request.form['username']
+            password = request.form['password']
+
+            possible_user = get_user(username)
+            if possible_user and hashlib.md5(password.encode()).hexdigest() == possible_user[2]:
+                user = User(possible_user[0], possible_user[1], possible_user[3], possible_user[4])
+                login_user(user)
+                return redirect(url_for('index'))
+            else:
+                return redirect(url_for('login'))
+
+            
+    @app.route('/logout')
+    @login_required
+    def logout() -> str:
+        logout_user()
+        return redirect(url_for('login'))
+    
     @app.route('/cotizacion', methods=['GET', 'POST'])
+    @login_required
     def price_request() -> str:
 
         if request.method == 'POST':
@@ -47,15 +107,18 @@ if __name__ == '__main__':
         return render_template('products.html', products=products, search_text='')
     
     @app.route('/liberaciones', methods=['GET'])
+    @login_required
     def unlocks() -> str:
         return render_template('unlocks.html')
     
     @app.route('/ordenes/todas', methods=['GET'])
+    @login_required
     def all_orders():
         orders = get_all_orders()
         return render_template('all_orders.html', orders=orders)
 
     @app.route('/ordenes', methods=['GET', 'POST'])
+    @login_required
     def orders():
         if request.method == 'POST':
             name = request.form.get('name')
@@ -70,6 +133,7 @@ if __name__ == '__main__':
         return render_template('orders.html', orders=orders)
     
     @app.route('/ordenes/validar/<int:order_id>', methods=['POST'])
+    @login_required
     def validate_order(order_id):
         connection = get_connection()
 
@@ -82,11 +146,13 @@ if __name__ == '__main__':
         return redirect(url_for('orders'))
 
     @app.route('/ordenes/eliminar/<int:order_id>', methods=['POST'])
+    @login_required
     def delete_order_route(order_id):
         delete_order(order_id)
         return redirect(url_for('orders'))
     
     @app.route('/ordenes/editar/<int:order_id>', methods=['GET', 'POST'])
+    @login_required
     def edit_order(order_id):
         connection = get_connection()
         cursor = connection.cursor()
@@ -117,6 +183,8 @@ if __name__ == '__main__':
             return render_template('edit_order.html', order=order)
 
     @app.route('/marcas')
+    @cache.cached(timeout = 60 * 5)
+    @login_required
     def brands() -> str:
         search_query = request.args.get('search', '').lower()
         response = requests.get('http://phone-specs-api-2.azharimm.dev/brands')
@@ -129,6 +197,8 @@ if __name__ == '__main__':
         return render_template('brands.html', brands=brands)
 
     @app.route('/marcas/<brand_slug>')
+    @cache.cached(timeout = 60)
+    @login_required
     def information(brand_slug) -> str:
         search_query = request.args.get('search', '').lower()
         page = request.args.get('page', 1, type=int)
@@ -159,6 +229,7 @@ if __name__ == '__main__':
         return render_template('phones.html', title=title, brand_slug=brand_slug, phones=paginated_phones, current_page=page, last_page=(len(all_phones) // phones_per_page) + 1, search_query=search_query)
         
     @app.route('/api/order-stats', methods=['GET'])
+    @login_required
     def order_stats():
         connection = get_connection()
         cursor = connection.cursor()

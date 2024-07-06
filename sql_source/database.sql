@@ -16,3 +16,11 @@ CREATE TABLE Orden_Productos (
     Estatus ENUM('Cancelado', 'Pendiente', 'Entregado') NOT NULL DEFAULT 'Pendiente'
     Inversion FLOAT(10,2) NOT NULL DEFAULT 0.0,
 );
+
+CREATE TABLE Usuario (
+    ID INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    Nombre_Usuario VARCHAR(255) NOT NULL,
+    Contraseña VARCHAR(255) NOT NULL,
+    Nombre VARCHAR(255) NOT NULL,
+    Foto VARCHAR(255) NOT NULL DEFAULT 'default_user.jpg'
+);
