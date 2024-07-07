@@ -22,7 +22,7 @@
             </div>
             <div class="card-body">
                 <h5 class="card-title">{{ phone.phone_name }}</h5>
-                <a href="{{ phone.detail }}" class="btn btn-primary" target="_blank">Detalles</a>
+                <a href="{{ url_for('phone_details') }}?url={{ phone.detail }}" class="btn btn-primary">Detalles</a>
             </div>
         </div>
     </div>

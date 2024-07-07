@@ -197,7 +197,7 @@ if __name__ == '__main__':
         return render_template('brands.html', brands=brands)
 
     @app.route('/marcas/<brand_slug>')
-    @cache.cached(timeout = 60)
+    @cache.cached(timeout = 60*3)
     @login_required
     def information(brand_slug) -> str:
         search_query = request.args.get('search', '').lower()
@@ -227,7 +227,18 @@ if __name__ == '__main__':
         paginated_phones = all_phones[start:end]
 
         return render_template('phones.html', title=title, brand_slug=brand_slug, phones=paginated_phones, current_page=page, last_page=(len(all_phones) // phones_per_page) + 1, search_query=search_query)
-        
+    
+    def get_phone_details(detail_url):
+        response = requests.get(detail_url)
+        return response.json()
+
+    @app.route('/details/', methods=['GET'])
+    @login_required
+    def phone_details():
+        detail_url = request.args.get('url')
+        phone = get_phone_details(detail_url)
+        return render_template('phone_details.html', phone=phone['data'])
+
     @app.route('/api/order-stats', methods=['GET'])
     @login_required
     def order_stats():

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Detalles del Teléfono{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h1>{{ phone.phone_name }}</h1>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <img src="{{ phone.thumbnail }}" alt="{{ phone.phone_name }}" class="img-fluid mb-3">
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Marca:</strong> {{ phone.brand }}</p>
+                    <p><strong>Fecha de lanzamiento:</strong> {{ phone.release_date }}</p>
+                    <p><strong>Dimensiones:</strong> {{ phone.dimension }}</p>
+                    <p><strong>Sistema operativo:</strong> {{ phone.os }}</p>
+                    <p><strong>Almacenamiento:</strong> {{ phone.storage }}</p>
+                </div>
+            </div>
+
+            <h2>Especificaciones</h2>
+            {% for spec in phone.specifications %}
+                <div class="card mb-3">
+                    <div class="card-header bg-secondary text-white">
+                        <h3>{{ spec.title }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            {% for item in spec.specs %}
+                                <li><strong>{{ item.key }}:</strong> {{ item.val | join(', ') }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <h2>Imágenes</h2>
+            <div id="phoneImagesCarousel" class="carousel slide" data-ride="carousel">
+                <div class="carousel-inner">
+                    {% for image in phone.phone_images %}
+                    <div class="carousel-item {% if loop.first %}active{% endif %}">
+                        <img src="{{ image }}" class="d-block w-100" alt="Imagen del teléfono">
+                    </div>
+                    {% endfor %}
+                </div>
+                <a class="carousel-control-prev" href="#phoneImagesCarousel" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Anterior</span>
+                </a>
+                <a class="carousel-control-next" href="#phoneImagesCarousel" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Siguiente</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
