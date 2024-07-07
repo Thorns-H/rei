@@ -3,30 +3,55 @@
 {% block title %}Liberaciones - REI Web Assistant{% endblock %}
 
 {% block content %}
-<script>
-    function att_unlocks() {
-        window.open("https://www.att.com.mx/desbloqueo", "_blank");
-    }
-    function telcel_unlocks() {
-        window.open("https://www.telcel.com/personas/politicas-y-codigos/desbloquear-equipos", "_blank");
-    }
-    function movistar_unlocks() {
-        window.open("https://www.movistar.com.mx/atencion-al-cliente/informacion/codigo-de-liberacion", "_blank");
-    }
-</script>
+<script src="{{ url_for('static', filename='js/unlocks.js') }}"></script>
 
 <div class="row">
     <div class="col">
         <h2>Liberaciones</h2>
-        <p>Puedes utilizar un <a href="https://temp-mail.org/es/" target="_blank">correo temporal.</a></p>
-        
+        <p>Este servicio usa la api de <a href="https://www.1secmail.com/api/">1secmail</a> para generar correos temporales.</p>
     </div>
 </div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h4>Correo Temporal</h4>
+            </div>
+            <div class="card-body">
+                <p id="tempEmail">No has generado ningún correo.</p>
+                <button class="btn btn-primary" onclick="generateTempEmail()">Generar Correo Temporal</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h4>Bandeja de Entrada</h4>
+            </div>
+            <div class="card-body" id="inbox">
+                <div class="alert alert-info">No hay correos nuevos.</div>
+                <button class="btn btn-primary" onclick="checkInbox()">Refrescar Bandeja de Entrada</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+        <h2>Páginas</h2>
+        <p>Aquí encuentras las páginas actualizadas donde hacer las liberaciones.</p>
+    </div>
+</div>
+
 <div class="row">
     <div class="col-md-4 mb-4">
         <div class="card">
             <div class="card-img-top-container">
-                <img src="{{ url_for('static', filename='images/att_logo.jpg') }}" class="supplier.card-img-top-container phone-image" alt="...">
+                <img src="{{ url_for('static', filename='images/att_logo.jpg') }}" class="supplier card-img-top-container phone-image" alt="...">
             </div>
             <button onclick="att_unlocks()" class="btn btn-primary">Ir a la página</button>
         </div>
@@ -34,7 +59,7 @@
     <div class="col-md-4 mb-4">
         <div class="card">
             <div class="card-img-top-container">
-                <img src="{{ url_for('static', filename='images/telcel_logo.jpg') }}" class="supplier.card-img-top-container phone-image" alt="...">
+                <img src="{{ url_for('static', filename='images/telcel_logo.jpg') }}" class="supplier card-img-top-container phone-image" alt="...">
             </div>
             <button onclick="telcel_unlocks()" class="btn btn-primary">Ir a la página</button>
         </div>
@@ -42,9 +67,28 @@
     <div class="col-md-4 mb-4">
         <div class="card">
             <div class="card-img-top-container">
-                <img src="{{ url_for('static', filename='images/movistar_logo.jpg') }}" class="supplier.card-img-top-container phone-image" alt="...">
+                <img src="{{ url_for('static', filename='images/movistar_logo.jpg') }}" class="supplier card-img-top-container phone-image" alt="...">
             </div>
             <button onclick="movistar_unlocks()" class="btn btn-primary">Ir a la página</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="emailModal" tabindex="-1" role="dialog" aria-labelledby="emailModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="emailModalTitle">Título del Correo</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="emailModalBody">
+                Contenido del correo
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
         </div>
     </div>
 </div>

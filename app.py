@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 import hashlib
 import requests
 import os
+import random
+import string
 
 from modules.db_connection import get_connection
 from modules.db_connection import get_products_by_name
@@ -110,6 +112,42 @@ if __name__ == '__main__':
     @login_required
     def unlocks() -> str:
         return render_template('unlocks.html')
+    
+    def generate_random_string(length=6):
+        letters = string.ascii_lowercase
+        return ''.join(random.choice(letters) for i in range(length))
+
+    def generate_temp_email():
+        username = generate_random_string()
+        domain = "1secmail.com"
+        email_address = f"{username}@{domain}"
+        return username, domain, email_address
+
+    @app.route('/generate_temp_email')
+    @login_required
+    def generate_temp_email_route():
+        username, domain, email_address = generate_temp_email()
+        return jsonify({"username": username, "domain": domain, "email_address": email_address})
+    
+    @app.route('/read_email/<username>/<domain>/<mail_id>')
+    def get_email_content(username, domain, mail_id):
+        api_url = f"https://www.1secmail.com/api/v1/?action=readMessage&login={username}&domain={domain}&id={mail_id}"
+        response = requests.get(api_url)
+        if response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            return jsonify({"error": "Failed to fetch email content."}), 500
+
+
+    @app.route('/check_inbox/<username>/<domain>')
+    @login_required
+    def check_inbox(username, domain):
+        api_url = f"https://www.1secmail.com/api/v1/?action=getMessages&login={username}&domain={domain}"
+        response = requests.get(api_url)
+        if response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            return jsonify({"error": "Failed to fetch emails."}), 500
     
     @app.route('/ordenes/todas', methods=['GET'])
     @login_required
