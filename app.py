@@ -5,17 +5,20 @@
 
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from werkzeug.utils import secure_filename
 from flask_caching import Cache
 from dotenv import load_dotenv
-import hashlib
+from PIL import Image, ExifTags
 import requests
-import os
+import hashlib
 import random
 import string
+import os
 
 from modules.db_connection import get_connection
 from modules.db_connection import get_products_by_name
-from modules.db_connection import new_order, get_all_orders, get_unfinished_orders, delete_order
+from modules.db_connection import new_order, update_order, get_order, delete_order, get_all_orders, get_unfinished_orders
+from modules.db_connection import new_order_photo, get_order_photos, delete_order_photo
 from modules.db_connection import get_user
 
 if __name__ == '__main__':
@@ -23,6 +26,9 @@ if __name__ == '__main__':
     load_dotenv()
 
     app = Flask(__name__)
+    app.config['UPLOAD_FOLDER'] = 'static/order_photos'
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+    app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
     app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
     cache = Cache(app, config={'CACHE_TYPE': 'simple'})
@@ -52,7 +58,6 @@ if __name__ == '__main__':
             return User(user[0], user[1], user[3], user[4])
         else:
             return None
-
 
     """
         El parámetro de host en 0.0.0.0 hará que puedan ver el render de las rutas de la
@@ -138,7 +143,6 @@ if __name__ == '__main__':
         else:
             return jsonify({"error": "Failed to fetch email content."}), 500
 
-
     @app.route('/check_inbox/<username>/<domain>')
     @login_required
     def check_inbox(username, domain):
@@ -189,12 +193,37 @@ if __name__ == '__main__':
         delete_order(order_id)
         return redirect(url_for('orders'))
     
+    def allowed_file(filename):
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+
+    def compress_image(image_path, output_path, quality=85):
+        with Image.open(image_path) as img:
+            for orientation in ExifTags.TAGS.keys():
+                if ExifTags.TAGS[orientation] == 'Orientation':
+                    break
+            try:
+                exif = dict(img._getexif().items())
+                if exif[orientation] == 3:
+                    img = img.rotate(180, expand=True)
+                elif exif[orientation] == 6:
+                    img = img.rotate(270, expand=True)
+                elif exif[orientation] == 8:
+                    img = img.rotate(90, expand=True)
+
+            except Exception as e:
+                ...
+
+            img.save(output_path, optimize=True, quality=quality)
+
+    @app.route('/ordenes/eliminar_foto/<int:photo_id>', methods=['POST'])
+    @login_required
+    def delete_photo(photo_id):
+        delete_order_photo(photo_id)
+        return redirect(url_for('orders'))
+
     @app.route('/ordenes/editar/<int:order_id>', methods=['GET', 'POST'])
     @login_required
     def edit_order(order_id):
-        connection = get_connection()
-        cursor = connection.cursor()
-
         if request.method == 'POST':
             name = request.form['name']
             service = request.form['service']
@@ -202,23 +231,30 @@ if __name__ == '__main__':
             cost = request.form['cost']
             investment = request.form['investment']
 
-            cursor.execute("""
-                UPDATE orden_productos 
-                SET Nombre = %s, Servicio = %s, Notas = %s, Costo = %s, Inversion = %s 
-                WHERE ID = %s
-            """, (name, service, notes, cost, investment, order_id))
+            update_order(name, service, notes, cost, investment, order_id)
             
-            connection.commit()
-            connection.close()
-            
+            if 'files' in request.files:
+                files = request.files.getlist('files')
+                for file in files:
+                    if file and allowed_file(file.filename):
+                        filename = secure_filename(file.filename)
+                        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                        compressed_path = os.path.join(app.config['UPLOAD_FOLDER'], f'{order_id}_' + filename)
+                        file.save(file_path)
+                        compress_image(file_path, compressed_path)
+                        os.remove(file_path)
+
+                        new_order_photo(order_id, f'order_photos/{order_id}_{filename}'.replace('\\', '/'))
+
             return redirect(url_for('orders'))
 
         else:
-            cursor.execute("SELECT * FROM orden_productos WHERE ID = %s", (order_id,))
-            order = cursor.fetchone()
-            connection.close()
-            
-            return render_template('edit_order.html', order=order)
+            order = get_order(order_id)
+            order_photos = get_order_photos(order_id)
+
+            if order_photos == ():
+                order_photos = ((-1,-1, 'order_photos/no_image.jpg'),)
+            return render_template('edit_order.html', order=order, order_photos=order_photos)
 
     @app.route('/marcas')
     @cache.cached(timeout = 60 * 5)

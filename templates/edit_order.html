@@ -8,7 +8,7 @@
         Editar Orden
     </div>
     <div class="card-body">
-        <form action="/ordenes/editar/{{ order[0] }}" method="post">
+        <form action="/ordenes/editar/{{ order[0] }}" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="name">Nombre del Cliente</label>
                 <input type="text" class="form-control" id="name" name="name" value="{{ order[1] }}" required>
@@ -29,8 +29,57 @@
                 <label for="investment">Inversión</label>
                 <input type="number" class="form-control" id="investment" name="investment" step="0.01" value="{{ order[8] }}" required>
             </div>
+            <div class="form-group">
+                <label for="files">Subir Imágenes</label>
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="files" name="files" multiple>
+                    <label class="custom-file-label" for="files">Elige archivo(s)</label>
+                </div>
+            </div>
             <button type="submit" class="btn btn-primary">Guardar Cambios</button>
         </form>
     </div>
 </div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        Galería
+    </div>
+    <div class="card-body">
+        <div id="imageCarousel" class="carousel slide" data-ride="carousel">
+            <div class="carousel-inner">
+                {% for photo in order_photos %}
+                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                    <img src="{{ url_for('static', filename=photo[2]) }}" class="d-block w-100" alt="Imagen de la orden">
+                    <form action="{{ url_for('delete_photo', photo_id=photo[0]) }}" method="post" class="delete-photo-form">
+                        <button type="submit" class="btn btn-danger btn-sm delete-image-button">
+                            <i class="fas fa-trash-alt">Eliminar</i>
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            <a class="carousel-control-prev" href="#imageCarousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Anterior</span>
+            </a>
+            <a class="carousel-control-next" href="#imageCarousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Siguiente</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.carousel-item {
+    position: relative;
+}
+.delete-image-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+}
+</style>
 {% endblock %}

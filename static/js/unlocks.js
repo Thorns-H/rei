@@ -1,11 +1,11 @@
 function att_unlocks() {
-    window.open("https://www.att.com.mx/desbloqueo", "_self");
+    window.open("https://www.att.com.mx/desbloqueo", "_blank");
 }
 function telcel_unlocks() {
-    window.open("https://www.telcel.com/personas/politicas-y-codigos/desbloquear-equipos", "_self");
+    window.open("https://www.telcel.com/personas/politicas-y-codigos/desbloquear-equipos", "_blank");
 }
 function movistar_unlocks() {
-    window.open("https://www.movistar.com.mx/atencion-al-cliente/informacion/codigo-de-liberacion", "_self");
+    window.open("https://www.movistar.com.mx/atencion-al-cliente/informacion/codigo-de-liberacion", "_blank");
 }
 
 let currentUsername = '';

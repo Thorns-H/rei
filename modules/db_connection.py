@@ -54,6 +54,92 @@ def new_order(name: str, service: str, notes: str, cost: float, invest: float) -
         print(f"Error ({e}) at modules/db_connection func 'new_order'")
         return False
     
+def get_order(order_id: int) -> tuple:
+    try:
+        connection = get_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM orden_productos WHERE ID = %s", (order_id,))
+            order = cursor.fetchone()
+
+        connection.close()
+
+        return order
+    except Exception as e:
+        print(f"Error ({e}) at modules/db_connection func 'get_order'")
+        return False
+    
+def update_order(name: str, service: str, notes: str, cost: float, investment: float, order_id: int) ->  bool:
+    try:
+        connection = get_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute("UPDATE orden_productos SET Nombre = %s, Servicio = %s, Notas = %s, Costo = %s, Inversion = %s WHERE ID = %s", (name, service, notes, cost, investment, order_id))
+
+        connection.commit()
+        connection.close()
+
+        return True
+
+    except Exception as e:
+        print(f"Error ({e}) at modules/db_connection func 'update_order'")
+        return False
+
+def new_order_photo(order_id: int, directory: str) -> bool:
+    try:
+        connection = get_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute("INSERT INTO Orden_Foto (ID_Orden, Directorio)VALUES (%s, %s)", (order_id, directory))
+
+        connection.commit()
+        connection.close()
+
+        return True
+    except Exception as e:
+        print(f"Error ({e}) at modules/db_connection func 'new_order'")
+        return False
+    
+def delete_order_photo(id: int) -> bool:
+    try:
+        connection = get_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT Directorio FROM Orden_Foto WHERE ID = %s", (id,))
+            result = cursor.fetchone()
+
+            if result:
+                photo_path = result[0]
+                full_path = os.path.join('static', photo_path)
+                full_path = os.path.abspath(full_path)
+                
+                if os.path.exists(full_path) and os.access(full_path, os.W_OK):
+                    os.remove(full_path)
+
+                cursor.execute("DELETE FROM Orden_Foto WHERE ID = %s", (id,))
+        
+        connection.commit()
+        connection.close()
+
+        return True
+    except Exception as e:
+        print(f"Error ({e}) at modules/db_connection func 'delete_order_photo'")
+        return False
+    
+def get_order_photos(id_orden: int) -> bool:
+    try:
+        connection = get_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT * FROM orden_foto WHERE ID_Orden = '{id_orden}' ORDER BY ID DESC")
+            order_photos = cursor.fetchall()
+
+        connection.close()
+
+        return order_photos
+    except Exception as e:
+        print(f"Error ({e}) at modules/db_connection func 'get_order_photos'")
+    
 def get_all_orders() -> tuple:
     try:
         connection = get_connection()
