@@ -12,6 +12,13 @@
     </div>
 </form>
 
+<!-- Mostrar mensaje de error si existe -->
+{% if error %}
+<div class="alert alert-danger" role="alert">
+    {{ error }}
+</div>
+{% endif %}
+
 <!-- Tabla de marcas -->
 <table class="table table-striped mt-3">
     <thead>

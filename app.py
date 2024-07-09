@@ -257,19 +257,25 @@ if __name__ == '__main__':
             return render_template('edit_order.html', order=order, order_photos=order_photos)
 
     @app.route('/marcas')
-    @cache.cached(timeout = 60 * 5)
+    @cache.cached(timeout=60*5)
     @login_required
     def brands() -> str:
         search_query = request.args.get('search', '').lower()
-        response = requests.get('http://phone-specs-api-2.azharimm.dev/brands')
-        data = response.json()
-        brands = data['data'] if data['status'] else []
+        error = None
+        brands = []
+
+        try:
+            response = requests.get('http://phone-specs-api-2.azharimm.dev/brands')
+            data = response.json()
+            brands = data['data'] if data['status'] else []
+        except Exception as e:
+            error = "Hubo un problema al comunicarse con la API de especificaciones de teléfonos."
 
         if search_query:
             brands = [brand for brand in brands if search_query in brand['brand_name'].lower()]
 
-        return render_template('brands.html', brands=brands)
-
+        return render_template('brands.html', brands=brands, error=error)
+    
     @app.route('/marcas/<brand_slug>')
     @cache.cached(timeout = 60*3)
     @login_required
