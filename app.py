@@ -23,7 +23,11 @@ from modules.db_connection import get_user
 
 if __name__ == '__main__':
 
+    # Encargado de cargar las variables establecidas en el .env
+
     load_dotenv()
+
+    # Configuramos la aplicación para soportar la subida de imagenes
 
     app = Flask(__name__)
     app.config['UPLOAD_FOLDER'] = 'static/order_photos'
@@ -31,7 +35,18 @@ if __name__ == '__main__':
     app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
     app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
+    # Para la api de los telefonos y la interfaz usamos un cache simple
+
     cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+
+    """
+        Las configuraciones y estructuras de nuestro usuario usando el login manager
+        que nos provee flask_login.
+
+        Importante si modificamos la base de datos en los atributos de usuario a futuro
+        para tener los datos cargados siempre, debemos modificar la clase User, asi como
+        la función load_user que sobrescribe el user_loader de flask_login.
+    """
 
     login_manager = LoginManager()
     login_manager.init_app(app)
@@ -60,21 +75,15 @@ if __name__ == '__main__':
             return None
 
     """
-        El parámetro de host en 0.0.0.0 hará que puedan ver el render de las rutas de la
-        página desde la ip de su máquina, pueden probarlo con su celular u otra máquina
-        siempre que esten conectados en la misma red.
-
-        También recuersen hacerlo usando https y no http.
-
-        Ejemplo: https://192.168.100.10:5000
-
-        Si quieren cambiar el protocolo de https a http, solo quiten ssl_context como parámetro.
+        Todas las rutas menos 'login' tienen que tener el decorador @login_required para asegurar
+        la integridad de la base de datos.
     """
 
     @app.route('/')
     @login_required
-    def index() -> str:
-        return render_template('index.html')
+    def index():
+        user = current_user
+        return render_template('index.html', user=user)
     
     @app.route('/login', methods=['GET', 'POST'])
     def login() -> str:
@@ -85,6 +94,9 @@ if __name__ == '__main__':
             password = request.form['password']
 
             possible_user = get_user(username)
+
+            # TODO: md5 es un método débil de encriptación, necesito cambiarlo a bcrypt.
+
             if possible_user and hashlib.md5(password.encode()).hexdigest() == possible_user[2]:
                 user = User(possible_user[0], possible_user[1], possible_user[3], possible_user[4])
                 login_user(user)
@@ -92,7 +104,6 @@ if __name__ == '__main__':
             else:
                 return redirect(url_for('login'))
 
-            
     @app.route('/logout')
     @login_required
     def logout() -> str:
@@ -117,6 +128,13 @@ if __name__ == '__main__':
     @login_required
     def unlocks() -> str:
         return render_template('unlocks.html')
+    
+    """
+        Para generar correos usamos la api de 1secmail, para ello podemos usar el dominio
+        por defecto de esta api, aunque hay más solo he probado con este y funciona bien.
+
+        Por cualquier modificación a futuro la documentacion esta en: https://www.1secmail.com/api/
+    """
     
     def generate_random_string(length=6):
         letters = string.ascii_lowercase
@@ -171,12 +189,17 @@ if __name__ == '__main__':
             new_order(name, service, notes, cost, invest)
             return redirect(url_for('orders'))
 
+        # Solo cargamos las ordenes pendientes.
+
         orders = get_unfinished_orders()
         return render_template('orders.html', orders=orders)
     
     @app.route('/ordenes/validar/<int:order_id>', methods=['POST'])
     @login_required
     def validate_order(order_id):
+
+        # TODO: Mover toda esta lógica a modules/db_connection.py
+
         connection = get_connection()
 
         with connection.cursor() as cursor:
@@ -192,6 +215,20 @@ if __name__ == '__main__':
     def delete_order_route(order_id):
         delete_order(order_id)
         return redirect(url_for('orders'))
+    
+    """
+        La lógica para subir imagenes también requiere ajustes como la compresión de las mismas
+        he intentado bajar la calidad de las mismas antes de guardarlas pero actualmente desconozco
+        si esto funciona bien.
+
+        La función allowed_file solamente verifica si la imagen es compatible en los formatos, de tal
+        manera que si el usuario usa la cámara del celular no pueda subir videos (de momento).
+
+        A su vez, la orientación de las imagenes se ve afectada algunas veces dependiendo del celular
+        que tome la foto, la función compress_image más allá de hacer la compresión verifica la orientación.
+
+        Aunque es posible subir varias imagenes al mismo tiempo recomiendo hacerlo una por una.
+    """
     
     def allowed_file(filename):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
@@ -246,26 +283,39 @@ if __name__ == '__main__':
 
                         new_order_photo(order_id, f'order_photos/{order_id}_{filename}'.replace('\\', '/'))
 
-            return redirect(url_for('orders'))
+            order = get_order(order_id)
+            order_photos = get_order_photos(order_id)
+
+            # Si la orden que esta siendo editada no contiene imagenes mandamos una imagen nula default.
+
+            if order_photos == ():
+                order_photos = ((-1,-1, 'order_photos/no_image.jpg'),)
+
+            return render_template('edit_order.html', order=order, order_photos=order_photos)
 
         else:
             order = get_order(order_id)
             order_photos = get_order_photos(order_id)
 
+            # Si la orden que esta siendo editada no contiene imagenes mandamos una imagen nula default.
+
             if order_photos == ():
                 order_photos = ((-1,-1, 'order_photos/no_image.jpg'),)
+
             return render_template('edit_order.html', order=order, order_photos=order_photos)
 
     @app.route('/marcas')
-    @cache.cached(timeout=60*5)
+    @cache.cached(timeout = 60*5) # Tiempo dedicado a tener en cache el ultimo resultado de la página.
     @login_required
     def brands() -> str:
         search_query = request.args.get('search', '').lower()
         error = None
         brands = []
 
+        # TODO: Buscar optimizaciones.
+
         try:
-            response = requests.get('http://phone-specs-api-2.azharimm.dev/brands')
+            response = requests.get('http://phone-specs-api.vercel.app/brands')
             data = response.json()
             brands = data['data'] if data['status'] else []
         except Exception as e:
@@ -277,15 +327,17 @@ if __name__ == '__main__':
         return render_template('brands.html', brands=brands, error=error)
     
     @app.route('/marcas/<brand_slug>')
-    @cache.cached(timeout = 60*3)
+    @cache.cached(timeout = 60*3) # Tiempo dedicado a tener en cache el ultimo resultado de la página.
     @login_required
     def information(brand_slug) -> str:
         search_query = request.args.get('search', '').lower()
         page = request.args.get('page', 1, type=int)
 
         all_phones = []
-        response = requests.get(f'http://phone-specs-api-2.azharimm.dev/brands/{brand_slug}')
+        response = requests.get(f'http://phone-specs-api.vercel.app/brands/{brand_slug}')
         data = response.json()
+
+        # TODO: Buscar optimizaciones.
         
         if data['status']:
             title = data['data']['title']
@@ -293,7 +345,7 @@ if __name__ == '__main__':
             last_page = data['data']['last_page']
 
             for page_num in range(1, last_page + 1):
-                response = requests.get(f'http://phone-specs-api-2.azharimm.dev/brands/{brand_slug}?page={page_num}')
+                response = requests.get(f'http://phone-specs-api.vercel.app/brands/{brand_slug}?page={page_num}')
                 page_data = response.json()
                 if page_data['status']:
                     all_phones.extend(page_data['data']['phones'])
@@ -322,6 +374,10 @@ if __name__ == '__main__':
     @app.route('/api/order-stats', methods=['GET'])
     @login_required
     def order_stats():
+
+        # TODO: Mover la lógica a modules/db_connection.py
+        # TODO: Hacer que la información sea relacionada al usuario solamente.
+
         connection = get_connection()
         cursor = connection.cursor()
 
@@ -345,6 +401,17 @@ if __name__ == '__main__':
         
         return jsonify({'profit': profit, 'invest': delivered_investment + pending_investment, 'pending': pending_cost})
     try:
+        """
+        El parámetro de host en 0.0.0.0 hará que puedan ver el render de las rutas de la
+        página desde la ip de su máquina, pueden probarlo con su celular u otra máquina
+        siempre que esten conectados en la misma red.
+
+        También recuersen hacerlo usando https y no http.
+
+        Ejemplo: https://192.168.100.10:5000
+
+        Si quieren cambiar el protocolo de https a http, solo quiten ssl_context como parámetro.
+        """
         app.run(host = '0.0.0.0', port = 5050, debug = True)
     except KeyboardInterrupt:
         exit()

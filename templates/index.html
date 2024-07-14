@@ -3,9 +3,8 @@
 {% block title %}Home - REI Web Assistant{% endblock %}
 
 {% block content %}
-
 <div class="jumbotron">
-    <h1 class="display-4">¡Bienvenido!</h1>
+    <h1 class="display-4">¡Bienvenido, {{ user.name.split()[0] }}!</h1>
     <p class="lead">Este es el dashboard principal de las ganancias.</p>
     <hr class="my-4">
     <canvas id="orderChart" width="400" height="400"></canvas>
