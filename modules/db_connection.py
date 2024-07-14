@@ -196,3 +196,27 @@ def get_user(username: str) -> str:
         return user
     except Exception as e:
         print(f"Error ({e}) at modules/db_connection func 'get_user'")
+
+"""
+    Este apartado contiene funciones de prueba para generar usuarios en la base de datos,
+    en teoria no deberia ser llamada jamás en app.py, recomiendo crear otro archivo .py
+    incluir estas funciones y correrlas ahí.
+"""
+
+import hashlib
+
+def new_user(username: str, password: str, name: str) -> str:
+    try:
+        connection = get_connection()
+
+        password = hashlib.md5(password.encode()).hexdigest()
+
+        with connection.cursor() as cursor:
+            cursor.execute("INSERT INTO Usuario(Nombre_Usuario, Contraseña, Nombre, Foto) VALUES (%s, %s, %s, %s)", (username, password, name, 'images/default_user.jpg'))
+
+        connection.commit()
+        connection.close()
+
+        return True
+    except Exception as e:
+        print(f"Error ({e}) at modules/db_connection func 'new_user', this function is only for testing.")
