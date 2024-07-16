@@ -64,7 +64,7 @@ function viewEmailContent(mailId) {
                     .then(response => response.json())
                     .then(data => {
                         document.getElementById('emailModalTitle').innerText = email.subject;
-                        document.getElementById('emailModalBody').innerText = data.textBody || 'No hay contenido disponible.';
+                        document.getElementById('emailModalBody').innerHTML = data.htmlBody || data.textBody || 'No hay contenido disponible.';
                         $('#emailModal').modal('show');
                     });
             }
