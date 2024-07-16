@@ -8,11 +8,8 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.utils import secure_filename
 from flask_caching import Cache
 from dotenv import load_dotenv
-from PIL import Image, ExifTags
 import requests
 import hashlib
-import random
-import string
 import os
 
 from modules.db_connection import get_connection
@@ -20,6 +17,12 @@ from modules.db_connection import get_products_by_name
 from modules.db_connection import new_order, update_order, get_order, delete_order, get_all_orders, get_unfinished_orders
 from modules.db_connection import new_order_photo, get_order_photos, delete_order_photo
 from modules.db_connection import get_user
+
+from modules.email_handlers import generate_temp_email
+
+from modules.image_handlers import allowed_file, compress_image
+
+from modules.cache_implementation import start_cache_updater, load_brands_from_cache, save_brands_to_cache, fetch_brands_from_api
 
 if __name__ == '__main__':
 
@@ -32,7 +35,6 @@ if __name__ == '__main__':
     app = Flask(__name__)
     app.config['UPLOAD_FOLDER'] = 'static/order_photos'
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-    app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg'}
     app.secret_key = os.getenv("FLASK_SECRET_KEY")
 
     # Para la api de los telefonos y la interfaz usamos un cache simple
@@ -135,16 +137,6 @@ if __name__ == '__main__':
 
         Por cualquier modificación a futuro la documentacion esta en: https://www.1secmail.com/api/
     """
-    
-    def generate_random_string(length=6):
-        letters = string.ascii_lowercase
-        return ''.join(random.choice(letters) for i in range(length))
-
-    def generate_temp_email():
-        username = generate_random_string()
-        domain = "1secmail.com"
-        email_address = f"{username}@{domain}"
-        return username, domain, email_address
 
     @app.route('/generate_temp_email')
     @login_required
@@ -153,6 +145,7 @@ if __name__ == '__main__':
         return jsonify({"username": username, "domain": domain, "email_address": email_address})
     
     @app.route('/read_email/<username>/<domain>/<mail_id>')
+    @login_required
     def get_email_content(username, domain, mail_id):
         api_url = f"https://www.1secmail.com/api/v1/?action=readMessage&login={username}&domain={domain}&id={mail_id}"
         response = requests.get(api_url)
@@ -229,28 +222,6 @@ if __name__ == '__main__':
 
         Aunque es posible subir varias imagenes al mismo tiempo recomiendo hacerlo una por una.
     """
-    
-    def allowed_file(filename):
-        return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
-
-    def compress_image(image_path, output_path, quality=85):
-        with Image.open(image_path) as img:
-            for orientation in ExifTags.TAGS.keys():
-                if ExifTags.TAGS[orientation] == 'Orientation':
-                    break
-            try:
-                exif = dict(img._getexif().items())
-                if exif[orientation] == 3:
-                    img = img.rotate(180, expand=True)
-                elif exif[orientation] == 6:
-                    img = img.rotate(270, expand=True)
-                elif exif[orientation] == 8:
-                    img = img.rotate(90, expand=True)
-
-            except Exception as e:
-                ...
-
-            img.save(output_path, optimize=True, quality=quality)
 
     @app.route('/ordenes/eliminar_foto/<int:photo_id>', methods=['POST'])
     @login_required
@@ -305,61 +276,64 @@ if __name__ == '__main__':
             return render_template('edit_order.html', order=order, order_photos=order_photos)
 
     @app.route('/marcas')
-    @cache.cached(timeout = 60*5) # Tiempo dedicado a tener en cache el ultimo resultado de la página.
     @login_required
     def brands() -> str:
         search_query = request.args.get('search', '').lower()
         error = None
-        brands = []
 
-        # TODO: Buscar optimizaciones.
-
-        try:
-            response = requests.get('http://phone-specs-api.vercel.app/brands')
-            data = response.json()
-            brands = data['data'] if data['status'] else []
-        except Exception as e:
-            error = "Hubo un problema al comunicarse con la API de especificaciones de teléfonos."
+        brands = load_brands_from_cache()
+        if not brands:
+            brands = fetch_brands_from_api()
+            if brands:
+                save_brands_to_cache(brands)
+            else:
+                error = "Hubo un problema al comunicarse con la API de especificaciones de teléfonos."
 
         if search_query:
             brands = [brand for brand in brands if search_query in brand['brand_name'].lower()]
 
         return render_template('brands.html', brands=brands, error=error)
-    
+        
     @app.route('/marcas/<brand_slug>')
-    @cache.cached(timeout = 60*3) # Tiempo dedicado a tener en cache el ultimo resultado de la página.
     @login_required
     def information(brand_slug) -> str:
         search_query = request.args.get('search', '').lower()
         page = request.args.get('page', 1, type=int)
+        error = None
 
-        all_phones = []
-        response = requests.get(f'http://phone-specs-api.vercel.app/brands/{brand_slug}')
-        data = response.json()
+        last_valid_page = app.config.get(f'last_page_{brand_slug}', 1)
 
-        # TODO: Buscar optimizaciones.
-        
-        if data['status']:
-            title = data['data']['title']
-            current_page = data['data']['current_page']
-            last_page = data['data']['last_page']
+        try:
+            response = requests.get(f'http://phone-specs-api.vercel.app/brands/{brand_slug}?page={page}')
+            data = response.json()
 
-            for page_num in range(1, last_page + 1):
-                response = requests.get(f'http://phone-specs-api.vercel.app/brands/{brand_slug}?page={page_num}')
-                page_data = response.json()
-                if page_data['status']:
-                    all_phones.extend(page_data['data']['phones'])
+            if data['status']:
+                title = data['data']['title']
+                current_page = data['data']['current_page']
+                last_page = data['data']['last_page']
+                phones = data['data']['phones']
+
+                # Si la página actual está vacía y no es la primera página, cargar la última página válida
+                if not phones and current_page > 1:
+                    return redirect(url_for('information', brand_slug=brand_slug, page=last_valid_page, search=search_query))
+
+                app.config[f'last_page_{brand_slug}'] = current_page
+
+            else:
+                error = "No se encontraron datos para la marca solicitada."
+                title = "Información no disponible"
+                phones = []
+
+        except Exception as e:
+            error = "Hubo un problema al comunicarse con la API de especificaciones de teléfonos."
+            title = "Error de conexión"
+            phones = []
 
         if search_query:
-            all_phones = [phone for phone in all_phones if search_query in phone['phone_name'].lower()]
+            phones = [phone for phone in phones if search_query in phone['phone_name'].lower()]
 
-        phones_per_page = 20
-        start = (page - 1) * phones_per_page
-        end = start + phones_per_page
-        paginated_phones = all_phones[start:end]
+        return render_template('phones.html', title=title, brand_slug=brand_slug, phones=phones, current_page=page, last_page=last_page, search_query=search_query, error=error)
 
-        return render_template('phones.html', title=title, brand_slug=brand_slug, phones=paginated_phones, current_page=page, last_page=(len(all_phones) // phones_per_page) + 1, search_query=search_query)
-    
     def get_phone_details(detail_url):
         response = requests.get(detail_url)
         return response.json()
@@ -412,6 +386,7 @@ if __name__ == '__main__':
 
         Si quieren cambiar el protocolo de https a http, solo quiten ssl_context como parámetro.
         """
+        start_cache_updater()
         app.run(host = '0.0.0.0', port = 5050, debug = True)
     except KeyboardInterrupt:
         exit()

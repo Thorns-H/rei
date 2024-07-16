@@ -12,6 +12,13 @@
     </div>
 </form>
 
+<!-- Mensaje de error -->
+{% if error %}
+<div class="alert alert-danger" role="alert">
+    {{ error }}
+</div>
+{% endif %}
+
 <!-- Cards de teléfonos -->
 <div class="row mt-3">
     {% for phone in phones %}
