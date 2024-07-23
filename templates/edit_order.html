@@ -8,26 +8,26 @@
         Editar Orden
     </div>
     <div class="card-body">
-        <form action="/ordenes/editar/{{ order[0] }}" method="post" enctype="multipart/form-data">
+        <form action="/ordenes/editar/{{ order['id'] }}" method="post" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="name">Nombre del Cliente</label>
-                <input type="text" class="form-control" id="name" name="name" value="{{ order[1] }}" required>
+                <input type="text" class="form-control" id="name" name="name" value="{{ order['customer_name'] }}" required>
             </div>
             <div class="form-group">
                 <label for="service">Servicio</label>
-                <input type="text" class="form-control" id="service" name="service" value="{{ order[4] }}" required>
+                <input type="text" class="form-control" id="service" name="service" value="{{ order['service'] }}" required>
             </div>
             <div class="form-group">
                 <label for="notes">Notas</label>
-                <textarea class="form-control" id="notes" name="notes">{{ order[5] }}</textarea>
+                <textarea class="form-control" id="notes" name="notes">{{ order['notes'] }}</textarea>
             </div>
             <div class="form-group">
                 <label for="cost">Costo</label>
-                <input type="number" class="form-control" id="cost" name="cost" step="0.01" value="{{ order[6] }}" required>
+                <input type="number" class="form-control" id="cost" name="cost" step="0.01" value="{{ order['cost'] }}" required>
             </div>
             <div class="form-group">
                 <label for="investment">Inversión</label>
-                <input type="number" class="form-control" id="investment" name="investment" step="0.01" value="{{ order[8] }}" required>
+                <input type="number" class="form-control" id="investment" name="investment" step="0.01" value="{{ order['investment'] }}" required>
             </div>
             <div class="form-group">
                 <label for="files">Subir Imágenes</label>
@@ -51,8 +51,8 @@
             <div class="carousel-inner">
                 {% for photo in order_photos %}
                 <div class="carousel-item {% if loop.first %}active{% endif %}">
-                    <img src="{{ url_for('static', filename=photo[2]) }}" class="d-block w-100" alt="Imagen de la orden">
-                    <form action="{{ url_for('delete_photo', photo_id=photo[0]) }}" method="post" class="delete-photo-form">
+                    <img src="{{ url_for('static', filename=photo['directory']) }}" class="d-block w-100" alt="Imagen de la orden">
+                    <form action="{{ url_for('delete_photo', photo_id=photo['id']) }}" method="post" class="delete-photo-form">
                         <button type="submit" class="btn btn-danger btn-sm delete-image-button">
                             <i class="fas fa-trash-alt">Eliminar</i>
                         </button>

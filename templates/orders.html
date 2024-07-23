@@ -43,21 +43,21 @@
     <div class="col-md-4 mb-4">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">{{ order[1] }}</h5>
-                <p class="card-text"><strong>Servicio:</strong> {{ order[4] }}</p>
-                <p class="card-text"><strong>Notas:</strong> {{ order[5] }}</p>
-                <p class="card-text"><strong>Costo:</strong> <span style="color: green;">${{ order[6] }}</span></p>
-                <p class="card-text"><strong>Inversión:</strong> <span style="color: red;">${{ order[8] }}</span></p>
+                <h5 class="card-title">{{ order['customer_name'] }}</h5>
+                <p class="card-text"><strong>Servicio:</strong> {{ order['service'] }}</p>
+                <p class="card-text"><strong>Notas:</strong> {{ order['notes'] }}</p>
+                <p class="card-text"><strong>Costo:</strong> <span style="color: green;">${{ order['cost'] }}</span></p>
+                <p class="card-text"><strong>Inversión:</strong> <span style="color: red;">${{ order['cost'] }}</span></p>
                 <p class="card-text"><strong>Estatus:</strong> 
-                    <span style="color: red;">{{ order[7] }}</span>
+                    <span style="color: red;">{{ order['status'] }}</span>
                 </p>
-                <form action="/ordenes/validar/{{ order[0] }}" method="post" style="display:inline-block;">
+                <form action="/ordenes/validar/{{ order['id'] }}" method="post" style="display:inline-block;">
                     <button type="submit" class="btn btn-success btn-sm">Validar</button>
                 </form>
-                <form action="/ordenes/editar/{{ order[0] }}" method="get" style="display:inline-block;">
+                <form action="/ordenes/editar/{{ order['id'] }}" method="get" style="display:inline-block;">
                     <button type="submit" class="btn btn-primary btn-sm">Editar</button>
                 </form>
-                <form action="/ordenes/eliminar/{{ order[0] }}" method="post" style="display:inline-block;">
+                <form action="/ordenes/eliminar/{{ order['id'] }}" method="post" style="display:inline-block;">
                     <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
                 </form>
             </div>

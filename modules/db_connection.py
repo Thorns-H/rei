@@ -11,12 +11,42 @@ def get_connection() -> pymysql.connections.Connection:
 
     load_dotenv()
 
+    db_host = os.getenv("DB_HOST")
     db_user = os.getenv("DB_USER")
     db_password = os.getenv("DB_PASSWORD")
     db_name = os.getenv("DB_NAME")
     db_port = int(os.getenv("DB_PORT"))
 
-    return pymysql.connect(host = 'localhost', user = db_user, password = db_password, db = db_name, port = db_port)
+    return pymysql.connect(host = db_host, user = db_user, password = db_password, db = db_name, port = db_port)
+
+class product:
+    def __init__(self, data: tuple) -> None:
+        self.id = data[0]
+        self.name = data[1]
+        self.supplier = data[2]
+        self.price = data[3]
+
+    def to_dict(self) -> None:
+        return {
+            'id': self.id,
+            'name': self.name,
+            'supplier': self.supplier,
+            'price': self.price
+        }
+    
+def convert_set(table: tuple, type: str) -> tuple:
+
+    items: list = []
+
+    for item in table:
+        if type == 'product':
+            items.append(product(item).to_dict())
+        elif type == 'order':
+            items.append(order(item).to_dict())
+        elif type == 'order_photo':
+            items.append(order_photo(item).to_dict())
+        
+    return tuple(items)
 
 def get_products_by_name(keywords: list) -> tuple:
     try:
@@ -35,9 +65,34 @@ def get_products_by_name(keywords: list) -> tuple:
 
         connection.close()
 
-        return products
+        return convert_set(products, 'product')
     except Exception as e:
         return False
+    
+class order:
+    def __init__(self, data: tuple = None) -> None:
+        self.id = data[0]
+        self.customer_name = data[1]
+        self.issue_date = data[2]
+        self.delivery_date = data[3]
+        self.service = data[4]
+        self.notes = data[5]
+        self.cost = data[6]
+        self.status = data[7]
+        self.investment = data[8]
+
+    def to_dict(self) -> dict:
+        return {
+            'id': self.id,
+            'customer_name': self.customer_name,
+            'issue_date': self.issue_date,
+            'delivery_date': self.delivery_date,
+            'service': self.service,
+            'notes': self.notes,
+            'cost': self.cost,
+            'status': self.status,
+            'investment': self.investment
+        }
 
 def new_order(name: str, service: str, notes: str, cost: float, invest: float) -> bool:
     try:
@@ -60,11 +115,11 @@ def get_order(order_id: int) -> tuple:
 
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM orden_productos WHERE ID = %s", (order_id,))
-            order = cursor.fetchone()
+            order_result = cursor.fetchone()
 
         connection.close()
 
-        return order
+        return order(order_result).to_dict()
     except Exception as e:
         print(f"Error ({e}) at modules/db_connection func 'get_order'")
         return False
@@ -84,6 +139,62 @@ def update_order(name: str, service: str, notes: str, cost: float, investment: f
     except Exception as e:
         print(f"Error ({e}) at modules/db_connection func 'update_order'")
         return False
+    
+def get_all_orders() -> tuple:
+    try:
+        connection = get_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM orden_productos ORDER BY Fecha_Emision DESC")
+            orders = cursor.fetchall()
+
+        connection.close()
+
+        return convert_set(orders, 'order')
+    except Exception as e:
+        print(f"Error ({e}) at modules/db_connection func 'get_orders'")
+    
+def get_unfinished_orders() -> tuple:
+    try:
+        connection = get_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM orden_productos WHERE Estatus = 'Pendiente' ORDER BY Fecha_Emision DESC")
+            orders = cursor.fetchall()
+
+        connection.close()
+
+        return convert_set(orders, 'order')
+    except Exception as e:
+        print(f"Error ({e}) at modules/db_connection func 'get_orders'")
+
+def delete_order(order_id: int) -> bool:
+    try:
+        connection = get_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute("DELETE FROM orden_productos WHERE ID = %s", (order_id,))
+
+        connection.commit()
+        connection.close()
+
+        return True
+    except Exception as e:
+        print(f"Error ({e}) at modules/db_connection func 'delete_order'")
+        return False
+    
+class order_photo:
+    def __init__(self, data: tuple) -> None:
+        self.id = data[0]
+        self.order_id = data[1]
+        self.directory = data[2]
+
+    def to_dict(self) -> dict:
+        return {
+            'id': self.id,
+            'order_id': self.order_id,
+            'directory': self.directory
+        }
 
 def new_order_photo(order_id: int, directory: str) -> bool:
     try:
@@ -136,52 +247,9 @@ def get_order_photos(id_orden: int) -> bool:
 
         connection.close()
 
-        return order_photos
+        return convert_set(order_photos, 'order_photo')
     except Exception as e:
         print(f"Error ({e}) at modules/db_connection func 'get_order_photos'")
-    
-def get_all_orders() -> tuple:
-    try:
-        connection = get_connection()
-
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM orden_productos ORDER BY Fecha_Emision DESC")
-            orders = cursor.fetchall()
-
-        connection.close()
-
-        return orders
-    except Exception as e:
-        print(f"Error ({e}) at modules/db_connection func 'get_orders'")
-    
-def get_unfinished_orders() -> tuple:
-    try:
-        connection = get_connection()
-
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM orden_productos WHERE Estatus = 'Pendiente' ORDER BY Fecha_Emision DESC")
-            orders = cursor.fetchall()
-
-        connection.close()
-
-        return orders
-    except Exception as e:
-        print(f"Error ({e}) at modules/db_connection func 'get_orders'")
-
-def delete_order(order_id: int) -> bool:
-    try:
-        connection = get_connection()
-
-        with connection.cursor() as cursor:
-            cursor.execute("DELETE FROM orden_productos WHERE ID = %s", (order_id,))
-
-        connection.commit()
-        connection.close()
-
-        return True
-    except Exception as e:
-        print(f"Error ({e}) at modules/db_connection func 'delete_order'")
-        return False
     
 def get_user(username: str) -> str:
     try:

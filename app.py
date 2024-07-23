@@ -55,11 +55,12 @@ if __name__ == '__main__':
     login_manager.login_view = 'login'
 
     class User(UserMixin):
-        def __init__(self, user_id, username, name, photo):
-            self.id = user_id
-            self.username = username
-            self.name = name
-            self.photo = photo
+        def __init__(self, data: tuple):
+            self.id = data[0]
+            self.username = data[1]
+            self.password = data[2]
+            self.name = data[3]
+            self.profile_picture = data[4]
                 
     @login_manager.user_loader
     def load_user(user_id):
@@ -72,7 +73,7 @@ if __name__ == '__main__':
         connection.close()
 
         if user:
-            return User(user[0], user[1], user[3], user[4])
+            return User(user)
         else:
             return None
 
@@ -100,7 +101,7 @@ if __name__ == '__main__':
             # TODO: md5 es un método débil de encriptación, necesito cambiarlo a bcrypt.
 
             if possible_user and hashlib.md5(password.encode()).hexdigest() == possible_user[2]:
-                user = User(possible_user[0], possible_user[1], possible_user[3], possible_user[4])
+                user = User(possible_user)
                 login_user(user)
                 return redirect(url_for('index'))
             else:
@@ -123,6 +124,8 @@ if __name__ == '__main__':
             keywords = []
 
         products = get_products_by_name(keywords)
+
+        print(products)
 
         return render_template('products.html', products=products, search_text='')
     
@@ -255,6 +258,7 @@ if __name__ == '__main__':
                         new_order_photo(order_id, f'order_photos/{order_id}_{filename}'.replace('\\', '/'))
 
             order = get_order(order_id)
+            
             order_photos = get_order_photos(order_id)
 
             # Si la orden que esta siendo editada no contiene imagenes mandamos una imagen nula default.

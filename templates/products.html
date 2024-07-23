@@ -20,22 +20,22 @@
     <div class="col-md-4 mb-4">
         <div class="card">
             <div class="card-img-top-container">
-                {% if product[2] == "AT_HOME" %}
+                {% if product['supplier'] == "AT_HOME" %}
                 <img src="{{ url_for('static', filename='images/at_home_logo.jpg') }}" class="supplier.card-img-top-container phone-image" alt="...">
-                {% elif product[2] == "KBKA_SHOP" %}
+                {% elif product['supplier'] == "KBKA_SHOP" %}
                 <img src="{{ url_for('static', filename='images/kbka_shop_logo.jpg') }}" class="supplier.card-img-top-container phone-image" alt="...">
                 {% else %}
                 <img src="{{ url_for('static', filename='images/supplier_default.jpg') }}" class="supplier.card-img-top-container phone-image" alt="...">
                 {% endif %}
             </div>
             <div class="card-body">
-                <h5 class="card-title">{{ product[1] }}</h5>
-                <p class="card-text"><b>Proveedor:</b> {{ product[2] }}</p>
-                <p class="card-text"><b>Precio:</b> ${{ product[3] }}</p>
-                {% if product[3] > 600 %}
-                <p class="card-text"><b>Cotización:</b> ${{ product[3] * 2 }}</p>
+                <h5 class="card-title">{{ product['name'] }}</h5>
+                <p class="card-text"><b>Proveedor:</b> {{ product['supplier'] }}</p>
+                <p class="card-text"><b>Precio:</b> ${{ product['price'] }}</p>
+                {% if product['price'] > 600 %}
+                <p class="card-text"><b>Cotización:</b> ${{ product['price'] * 2 }}</p>
                 {% else %}
-                <p class="card-text"><b>Cotización:</b> ${{ product[3] + 400 }}</p>
+                <p class="card-text"><b>Cotización:</b> ${{ product['price'] + 400 }}</p>
                 {% endif %}
             </div>
         </div>
