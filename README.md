@@ -16,6 +16,7 @@ mysql -u username -p new_database < sql_source/database.sql
 ```
 * You need to create a .env file with all your personal information to run the app, this is an example:
 ```
+DB_HOST = YOUR_HOST
 DB_USER = YOUR_USER
 DB_PASSWORD = YOUR_PASSWORD
 DB_NAME = YOUR_DATABASE
