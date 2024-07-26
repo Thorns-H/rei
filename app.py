@@ -144,7 +144,7 @@ if __name__ == '__main__':
     @app.route('/generate_temp_email')
     @login_required
     def generate_temp_email_route():
-        username, domain, email_address = generate_temp_email()
+        username, domain, email_address = generate_temp_email()  
         return jsonify({"username": username, "domain": domain, "email_address": email_address})
     
     @app.route('/read_email/<username>/<domain>/<mail_id>')
@@ -257,27 +257,15 @@ if __name__ == '__main__':
 
                         new_order_photo(order_id, f'order_photos/{order_id}_{filename}'.replace('\\', '/'))
 
-            order = get_order(order_id)
-            
-            order_photos = get_order_photos(order_id)
+        order = get_order(order_id)
+        order_photos = get_order_photos(order_id)
 
-            # Si la orden que esta siendo editada no contiene imagenes mandamos una imagen nula default.
+        # Si la orden que esta siendo editada no contiene imagenes mandamos una imagen nula default.
 
-            if order_photos == ():
-                order_photos = ((-1,-1, 'order_photos/no_image.jpg'),)
+        if order_photos == ():
+            order_photos = ({'id': -1, 'order_id': -1,'directory': 'order_photos/no_image.jpg'},)
 
-            return render_template('edit_order.html', order=order, order_photos=order_photos)
-
-        else:
-            order = get_order(order_id)
-            order_photos = get_order_photos(order_id)
-
-            # Si la orden que esta siendo editada no contiene imagenes mandamos una imagen nula default.
-
-            if order_photos == ():
-                order_photos = ((-1,-1, 'order_photos/no_image.jpg'),)
-
-            return render_template('edit_order.html', order=order, order_photos=order_photos)
+        return render_template('edit_order.html', order=order, order_photos=order_photos)
 
     @app.route('/marcas')
     @login_required
