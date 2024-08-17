@@ -29,13 +29,13 @@ FLASK_SECRET_KEY = YOUR_FLASK_KEY
 ```
 python3 -m venv rei_venv
 source rei_venv/bin/activate
-pip3 -r requirements.txt
+pip3 install -r requirements.txt
 ```
 * Windows:
 ```
 py -m venv rei_venv
 source venv/Scripts/activate.bat
-pip -r requirements.txt
+pip install -r requirements.txt
 ```
 
 Finishing this steps you can now run the `app.py` and log into the browser using `DB_HOST/5050`.
