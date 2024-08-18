@@ -34,7 +34,7 @@ pip3 install -r requirements.txt
 * Windows:
 ```
 py -m venv rei_venv
-source venv/Scripts/activate.bat
+source rei_venv/Scripts/activate.bat
 pip install -r requirements.txt
 ```
 
