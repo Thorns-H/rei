@@ -3,11 +3,47 @@
 {% block title %}Home - REI Web Assistant{% endblock %}
 
 {% block content %}
-<div class="jumbotron">
-    <h1 class="display-4">¡Bienvenido, {{ user.name.split()[0] }}!</h1>
-    <p class="lead">Este es el dashboard principal de las ganancias.</p>
-    <hr class="my-4">
-    <canvas id="orderChart" width="400" height="400"></canvas>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card h-100" style="background-color: rgba(255, 255, 255, 0.8);">
+                <div class="card-body">
+                    <h2 class="card-title">Ganancias Mensuales</h2>
+                    <canvas id="orderChart" width="400" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+           
+        <div class="col-md-6">
+            <div class="row h-50">
+                <div class="col-12">
+                    <div class="card h-100" style="background-color: rgba(255, 255, 255, 0.8);">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="card-title">USR-{{ "%05d"|format(user.id) }}</h3>
+                                    <p class="card-text">{{ user.name }}</p>
+                                </div>
+                                <img src="{{ url_for('static', filename='images/' + user.profile_picture) }}" alt="Profile Picture" class="rounded-circle" style="width: 100px; height: 100px;">
+                            </div>                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row h-50 mt-3">
+                <div class="col-12">
+                    <div class="card h-100" style="background-color: rgba(255, 255, 255, 0.8);">
+                        <div class="card-body">
+                            <h3 class="card-title">Agregar una nota.</h3>
+                            <p class="card-text">Formulario.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

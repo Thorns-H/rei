@@ -48,6 +48,7 @@
                 <li class="nav-item active">
                     <a class="nav-link" href="/">Inicio</a>
                 </li>
+                {% if current_user.is_authenticated %}
                 <li class="nav-item">
                     <a class="nav-link" href="/cotizacion">Cotización</a>
                 </li>
@@ -60,6 +61,7 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/marcas">Información</a>
                 </li>
+                {% endif %}
             </ul>
             <ul class="navbar-nav ml-auto">
                 {% if current_user.is_authenticated %}

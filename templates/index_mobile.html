@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Home - REI Web Assistant{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-6 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h3 class="card-title">Ganancias Mensuales</h3>
+                    <hr class="my-4">
+                    <canvas id="orderChart" width="400" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">{{ user.name.split()[0] }} USR-{{ user.id }}</h5>
+                    <p class="card-text">{{ user.profile_picture }}</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Agregar una nota.</h5>
+                    <p class="card-text">Formulario.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+{% endblock %}

@@ -13,8 +13,8 @@
     <div class="col-md-4 mb-4">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">{{ order['customer_name'] }}</h5>
-                <p class="card-text"><strong>Referencia: {{ "{:06d}".format(order['id']) }}</p></strong>
+                <h5 class="card-title">{{ order['client_name'] }}</h5>
+                <p class="card-text"><strong>Referencia: {{ "{:06d}".format(order['repair_order_id']) }}</p></strong>
                 <p class="card-text"><strong>Servicio:</strong> {{ order['service'] }}</p>
                 <p class="card-text"><strong>Notas:</strong> {{ order['notes'] }}</p>
                 <p class="card-text"><strong>Costo:</strong> <span style="color: green;">${{ order['cost'] }}</span></p>
@@ -22,10 +22,10 @@
                 <p class="card-text"><strong>Estatus:</strong> 
                     <span style="color: {% if order['status'] == 'Pendiente' %}red{% elif order['status'] == 'Entregado' %}green{% else %}yellow{% endif %};">{{ order['status'] }}</span>
                 </p>
-                <form action="/ordenes/editar/{{ order['id'] }}" method="get" style="display:inline-block;">
+                <form action="/ordenes/editar/{{ order['repair_order_id'] }}" method="get" style="display:inline-block;">
                     <button type="submit" class="btn btn-primary btn-sm">Editar</button>
                 </form>
-                <form action="/ordenes/eliminar/{{ order['id'] }}" method="post" style="display:inline-block;">
+                <form action="/ordenes/eliminar/{{ order['repair_order_id'] }}" method="post" style="display:inline-block;">
                     <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
                 </form>
             </div>

@@ -8,14 +8,15 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.utils import secure_filename
 from flask_caching import Cache
 from dotenv import load_dotenv
+import user_agents
 import requests
 import hashlib
 import os
 
 from modules.db_connection import get_connection
-from modules.db_connection import get_products_by_name
-from modules.db_connection import new_order, update_order, get_order, delete_order, get_all_orders, get_unfinished_orders
-from modules.db_connection import new_order_photo, get_order_photos, delete_order_photo
+from modules.db_connection import get_parts_by_name
+from modules.db_connection import new_repair_order, update_repair_order, get_repair_order, delete_repair_order, get_all_repair_orders, get_unfinished_repair_orders
+from modules.db_connection import new_order_media, get_order_media, delete_order_media
 from modules.db_connection import get_user
 
 from modules.email_handlers import generate_temp_email
@@ -28,7 +29,7 @@ if __name__ == '__main__':
 
     # Encargado de cargar las variables establecidas en el .env
 
-    load_dotenv()
+    load_dotenv(override = True)
 
     # Configuramos la aplicación para soportar la subida de imagenes
 
@@ -57,17 +58,18 @@ if __name__ == '__main__':
     class User(UserMixin):
         def __init__(self, data: tuple):
             self.id = data[0]
-            self.username = data[1]
-            self.password = data[2]
-            self.name = data[3]
+            self.name = data[1]
+            self.email = data[2]
+            self.password = data[3]
             self.profile_picture = data[4]
+            self.created_at = data[5]
                 
     @login_manager.user_loader
     def load_user(user_id):
         connection = get_connection()
 
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM usuario WHERE ID = %s", (user_id,))
+            cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
             user = cursor.fetchone()
 
         connection.close()
@@ -86,21 +88,25 @@ if __name__ == '__main__':
     @login_required
     def index():
         user = current_user
-        return render_template('index.html', user=user)
+        user_agent = request.headers.get('User-Agent')
+        ua = user_agents.parse(user_agent)
+
+        if ua.is_mobile:
+            return render_template('index_mobile.html', user=user)
+        else:
+            return render_template('index.html', user=user)
     
     @app.route('/login', methods=['GET', 'POST'])
     def login() -> str:
         if request.method == 'GET':
             return render_template('login.html')
         else:
-            username = request.form['username']
+            email = request.form['email']
             password = request.form['password']
 
-            possible_user = get_user(username)
+            possible_user = get_user(email)
 
-            # TODO: md5 es un método débil de encriptación, necesito cambiarlo a bcrypt.
-
-            if possible_user and hashlib.md5(password.encode()).hexdigest() == possible_user[2]:
+            if possible_user and hashlib.md5(password.encode()).hexdigest() == possible_user[3]:
                 user = User(possible_user)
                 login_user(user)
                 return redirect(url_for('index'))
@@ -123,11 +129,9 @@ if __name__ == '__main__':
         else:
             keywords = []
 
-        products = get_products_by_name(keywords)
+        parts = get_parts_by_name(keywords)
 
-        print(products)
-
-        return render_template('products.html', products=products, search_text='')
+        return render_template('parts.html', parts=parts, search_text='')
     
     @app.route('/liberaciones', methods=['GET'])
     @login_required
@@ -170,36 +174,37 @@ if __name__ == '__main__':
     @app.route('/ordenes/todas', methods=['GET'])
     @login_required
     def all_orders():
-        orders = get_all_orders()
+        orders = get_all_repair_orders()
         return render_template('all_orders.html', orders=orders)
 
     @app.route('/ordenes', methods=['GET', 'POST'])
     @login_required
     def orders():
         if request.method == 'POST':
-            name = request.form.get('name')
+            client_name = request.form.get('client_name')
+            model = request.form.get('model')
             service = request.form.get('service')
-            notes = request.form.get('notes', '')
+            observations = request.form.get('observations', '')
             cost = float(request.form.get('cost'))
-            invest = float(request.form.get('invest'))
-            new_order(name, service, notes, cost, invest)
+            investment = float(request.form.get('investment'))
+            new_repair_order(client_name, current_user.id, model, service, observations, cost, investment)
             return redirect(url_for('orders'))
 
         # Solo cargamos las ordenes pendientes.
 
-        orders = get_unfinished_orders()
+        orders = get_unfinished_repair_orders()
         return render_template('orders.html', orders=orders)
     
-    @app.route('/ordenes/validar/<int:order_id>', methods=['POST'])
+    @app.route('/ordenes/validar/<int:repair_order_id>', methods=['POST'])
     @login_required
-    def validate_order(order_id):
+    def validate_order(repair_order_id):
 
         # TODO: Mover toda esta lógica a modules/db_connection.py
 
         connection = get_connection()
 
         with connection.cursor() as cursor:
-            cursor.execute("UPDATE orden_productos SET Estatus = 'Entregado', Fecha_Entrega = NOW() WHERE ID = %s", (order_id,))
+            cursor.execute("UPDATE repair_orders SET status = 'Entregado', delivered_at = NOW() WHERE repair_order_id = %s", (repair_order_id,))
 
         connection.commit()
         connection.close()
@@ -209,7 +214,7 @@ if __name__ == '__main__':
     @app.route('/ordenes/eliminar/<int:order_id>', methods=['POST'])
     @login_required
     def delete_order_route(order_id):
-        delete_order(order_id)
+        delete_repair_order(order_id)
         return redirect(url_for('orders'))
     
     """
@@ -226,10 +231,10 @@ if __name__ == '__main__':
         Aunque es posible subir varias imagenes al mismo tiempo recomiendo hacerlo una por una.
     """
 
-    @app.route('/ordenes/eliminar_foto/<int:photo_id>', methods=['POST'])
+    @app.route('/ordenes/eliminar_foto/<int:media_id>', methods=['POST'])
     @login_required
-    def delete_photo(photo_id):
-        delete_order_photo(photo_id)
+    def delete_photo(media_id):
+        delete_order_media(media_id)
         return redirect(url_for('orders'))
 
     @app.route('/ordenes/editar/<int:order_id>', methods=['GET', 'POST'])
@@ -242,7 +247,7 @@ if __name__ == '__main__':
             cost = request.form['cost']
             investment = request.form['investment']
 
-            update_order(name, service, notes, cost, investment, order_id)
+            update_repair_order(name, service, notes, cost, investment, order_id)
             
             if 'files' in request.files:
                 files = request.files.getlist('files')
@@ -255,17 +260,17 @@ if __name__ == '__main__':
                         compress_image(file_path, compressed_path)
                         os.remove(file_path)
 
-                        new_order_photo(order_id, f'order_photos/{order_id}_{filename}'.replace('\\', '/'))
+                        new_order_media(order_id, f'order_photos/{order_id}_{filename}'.replace('\\', '/'))
 
-        order = get_order(order_id)
-        order_photos = get_order_photos(order_id)
+        order = get_repair_order(order_id)
+        order_media = get_order_media(order_id)
 
         # Si la orden que esta siendo editada no contiene imagenes mandamos una imagen nula default.
 
-        if order_photos == ():
-            order_photos = ({'id': -1, 'order_id': -1,'directory': 'order_photos/no_image.jpg'},)
+        if order_media == ():
+            order_media = ({'id': -1, 'order_id': -1,'directory': 'order_photos/no_image.jpg'},)
 
-        return render_template('edit_order.html', order=order, order_photos=order_photos)
+        return render_template('edit_order.html', order=order, order_media=order_media)
 
     @app.route('/marcas')
     @login_required
@@ -347,18 +352,18 @@ if __name__ == '__main__':
         connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute("SELECT SUM(Costo) FROM orden_productos WHERE Estatus='Entregado'")
+        cursor.execute("SELECT SUM(cost) FROM repair_orders WHERE status='Entregado'")
         delivered_cost = cursor.fetchone()[0] or 0
 
-        cursor.execute("SELECT SUM(Inversion) FROM orden_productos WHERE Estatus='Entregado'")
+        cursor.execute("SELECT SUM(investment) FROM repair_orders WHERE status='Entregado'")
         delivered_investment = cursor.fetchone()[0] or 0
 
         profit = delivered_cost - delivered_investment
         
-        cursor.execute("SELECT SUM(Costo) FROM orden_productos WHERE Estatus='Pendiente'")
+        cursor.execute("SELECT SUM(cost) FROM repair_orders WHERE status='Pendiente'")
         pending_cost = cursor.fetchone()[0] or 0
 
-        cursor.execute("SELECT SUM(Inversion) FROM orden_productos WHERE Estatus='Pendiente'")
+        cursor.execute("SELECT SUM(investment) FROM repair_orders WHERE status='Pendiente'")
         pending_investment = cursor.fetchone()[0] or 0
 
         pending_cost = pending_cost - pending_investment

@@ -3,7 +3,7 @@
 {% block title %}Órdenes - REI Web Assistant{% endblock %}
 
 {% block content %}
-<h2>Control de Ordenes</h2>
+<h2>Control de Ordenes de Reparación</h2>
 <p>Aquí puedes crear, consultar y eliminar ordenes.</p>
 <!-- Formulario para crear una nueva orden -->
 <div class="card mb-4">
@@ -11,15 +11,19 @@
         <form action="/ordenes" method="post">
             <div class="form-group">
                 <label for="name">Nombre del Cliente</label>
-                <input type="text" class="form-control" id="name" name="name" required>
+                <input type="text" class="form-control" id="client_name" name="client_name" required>
+            </div>
+            <div class="form-group">
+                <label for="name">Modelo del Celular</label>
+                <input type="text" class="form-control" id="model" name="model" required>
             </div>
             <div class="form-group">
                 <label for="service">Servicio</label>
                 <input type="text" class="form-control" id="service" name="service" required>
             </div>
             <div class="form-group">
-                <label for="notes">Notas</label>
-                <textarea class="form-control" id="notes" name="notes"></textarea>
+                <label for="notes">Observaciones</label>
+                <textarea class="form-control" id="observations" name="observations"></textarea>
             </div>
             <div class="form-group">
                 <label for="cost">Costo</label>
@@ -27,7 +31,7 @@
             </div>
             <div class="form-group">
                 <label for="cost">Inversión</label>
-                <input type="number" class="form-control" id="invest" name="invest" step="0.01" value="0.0" required>
+                <input type="number" class="form-control" id="investment" name="investment" step="0.01" value="0.0" required>
             </div>
             <button type="submit" class="btn btn-primary">Crear Orden</button>
         </form>
@@ -43,21 +47,22 @@
     <div class="col-md-4 mb-4">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">{{ order['customer_name'] }}</h5>
+                <h5 class="card-title">{{ order['client_name'] }}</h5>
+                <p class="card-text"><strong>Modelo:</strong> {{ order['model'] }}</p>
                 <p class="card-text"><strong>Servicio:</strong> {{ order['service'] }}</p>
-                <p class="card-text"><strong>Notas:</strong> {{ order['notes'] }}</p>
+                <p class="card-text"><strong>Observaciones:</strong> {{ order['observations'] }}</p>
                 <p class="card-text"><strong>Costo:</strong> <span style="color: green;">${{ order['cost'] }}</span></p>
                 <p class="card-text"><strong>Inversión:</strong> <span style="color: red;">${{ order['investment'] }}</span></p>
                 <p class="card-text"><strong>Estatus:</strong> 
                     <span style="color: red;">{{ order['status'] }}</span>
                 </p>
-                <form action="/ordenes/validar/{{ order['id'] }}" method="post" style="display:inline-block;">
+                <form action="/ordenes/validar/{{ order['repair_order_id'] }}" method="post" style="display:inline-block;">
                     <button type="submit" class="btn btn-success btn-sm">Validar</button>
                 </form>
-                <form action="/ordenes/editar/{{ order['id'] }}" method="get" style="display:inline-block;">
+                <form action="/ordenes/editar/{{ order['repair_order_id'] }}" method="get" style="display:inline-block;">
                     <button type="submit" class="btn btn-primary btn-sm">Editar</button>
                 </form>
-                <form action="/ordenes/eliminar/{{ order['id'] }}" method="post" style="display:inline-block;">
+                <form action="/ordenes/eliminar/{{ order['repair_order_id'] }}" method="post" style="display:inline-block;">
                     <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
                 </form>
             </div>
