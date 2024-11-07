@@ -1,0 +1,104 @@
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Título de la página */
+h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    margin-left: 30px;
+    margin-bottom: 30px;
+}
+
+/* Contenedor de las órdenes */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+/* Estilo para las tarjetas de órdenes */
+.card {
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e1e1e1;
+    width: 100%;
+    max-width: 300px;
+    margin: 10px 0;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Cuerpo de las tarjetas */
+.card-body {
+    padding: 20px;
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 15px;
+}
+
+.card-text {
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+.card-text strong {
+    font-weight: bold;
+}
+
+/* Estilo de los precios (Costo y Inversión) */
+.card-text span {
+    font-size: 1rem;
+}
+
+.card-text .green {
+    color: green;
+}
+
+.card-text .red {
+    color: red;
+}
+
+.card-text .yellow {
+    color: orange;
+}
+
+/* Botones dentro de la tarjeta */
+button {
+    margin: 5px 0;
+}
+
+/* Estilo para los formularios de acción */
+form {
+    display: inline-block;
+    margin-right: 5px;
+}
+
+/* Media Queries para pantallas pequeñas */
+@media (max-width: 768px) {
+    .row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .card {
+        width: 100%; /* Las tarjetas ocupan todo el ancho en móviles */
+        max-width: none;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        margin-left: 15px;
+    }
+}

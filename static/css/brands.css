@@ -1,0 +1,105 @@
+/* Estilo general para la página de marcas */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* Título de la página */
+h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: black;
+    margin-bottom: 20px;
+}
+
+/* Estilo para la barra de búsqueda */
+form .form-group {
+    max-width: 500px;
+    margin: 0 auto 30px auto; /* Centramos el formulario de búsqueda */
+}
+
+form input[type="text"] {
+    border-radius: 20px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    width: 100%;
+}
+
+/* Estilos para la tabla de marcas */
+table {
+    width: 100%;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 30px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    font-size: 1rem;
+}
+
+th {
+    background-color: #007bff;
+    color: white;
+}
+
+tbody tr:nth-child(odd) {
+    background-color: #f2f2f2;
+}
+
+tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+/* Estilo para los botones dentro de la tabla */
+table .btn {
+    font-size: 0.875rem;
+    padding: 6px 12px;
+    border-radius: 20px;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+table .btn-primary {
+    background-color: #007bff;
+    border: none;
+    color: white;
+}
+
+table .btn-primary:hover {
+    background-color: #0056b3;
+}
+
+/* Estilo para los mensajes de error */
+.alert {
+    margin-top: 30px;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+/* Media Queries para pantallas pequeñas */
+@media (max-width: 768px) {
+    h2 {
+        font-size: 1.5rem;
+        margin-left: 15px;
+    }
+
+    /* Ajustamos la tabla para que se vea bien en móviles */
+    table {
+        font-size: 0.875rem;
+    }
+
+    table th, table td {
+        padding: 10px 8px;
+    }
+
+    table .btn {
+        font-size: 0.75rem;
+        padding: 5px 10px;
+    }
+}

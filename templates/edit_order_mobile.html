@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Orden - REI Web Assistant{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/edit_order_mobile.css') }}">
+
+<div class="card mb-4">
+    <div class="card-header">
+        Editar Orden
+    </div>
+    <div class="card-body">
+        <form id="editOrderForm" action="/ordenes/editar/{{ order['repair_order_id'] }}" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">
+            <div class="form-group">
+                <label for="client_name">Nombre del Cliente</label>
+                <input type="text" class="form-control" id="client_name" name="client_name" value="{{ order['client_name'] }}" required>
+            </div>
+            <div class="form-group">
+                <label for="model">Modelo</label>
+                <input type="text" class="form-control" id="model" name="model" value="{{ order['model'] }}" required>
+            </div>
+            <div class="form-group">
+                <label for="service">Servicio</label>
+                <input type="text" class="form-control" id="service" name="service" value="{{ order['service'] }}" required>
+            </div>
+            <div class="form-group">
+                <label for="observations">Observaciones</label>
+                <textarea class="form-control" id="observations" name="observations">{{ order['observations'] }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="refaccion">Refacción</label>
+                <select class="form-control" id="refaccion" name="refaccion">
+                    <option value="">Seleccione una opción</option>
+                    <option value="part">Refacción 1</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="cost">Costo</label>
+                <input type="number" class="form-control" id="cost" name="cost" step="0.01" min="0" value="{{ order['cost'] }}" required>
+            </div>
+            <div class="form-group">
+                <label for="investment">Inversión</label>
+                <input type="number" class="form-control" id="investment" name="investment" step="0.01" min="0" value="{{ order['investment'] }}" required>
+            </div>
+            <div class="form-group">
+                <label for="files">Subir Imágenes</label>
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="files" name="files" multiple>
+                    <label class="custom-file-label" for="files">Elige archivo(s)</label>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='/ordenes';">Volver</button>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        Galería
+    </div>
+    <div class="card-body">
+        <div id="imageCarousel" class="carousel slide" data-ride="carousel">
+            <div class="carousel-inner">
+                {% for media in order_media %}
+                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                    <img src="{{ url_for('static', filename=media['directory']) }}" class="d-block w-100" alt="Imagen de la orden">
+                    <form action="{{ url_for('delete_photo', media_id=media['media_id']) }}" method="post" class="delete-photo-form">
+                        <button type="submit" class="btn btn-danger btn-sm delete-image-button">
+                            <i class="fas fa-trash-alt">Eliminar</i>
+                        </button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+            <a class="carousel-control-prev" href="#imageCarousel" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="sr-only">Anterior</span>
+            </a>
+            <a class="carousel-control-next" href="#imageCarousel" role="button" data-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="sr-only">Siguiente</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.carousel-item {
+    position: relative;
+}
+.delete-image-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+}
+</style>
+
+<script>
+function validateForm() {
+    const cost = parseFloat(document.getElementById("cost").value);
+    const investment = parseFloat(document.getElementById("investment").value);
+
+    if (investment > cost) {
+        alert("La inversión no puede ser mayor que el costo.");
+        return false;
+    }
+    
+    return true;
+}
+</script>
+{% endblock %}

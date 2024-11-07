@@ -3,44 +3,47 @@
 {% block title %}Cotización - REI Web Assistant{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/parts.css') }}">
+
+<div class="cotizacion-page">
+    <div class="header">
         <h2>Cotización</h2>
-        <p>Si estas teniendo problemas, haz una <a href="https://drive.google.com/drive/folders/1NyXQToIkYCXBBgqyMVDRBrRn-EcCwfCp?usp=sharing">consulta manual.</a></p>
-        <form method="post" action="/cotizacion" class="form-group">
-            <input class="form-control mr-sm-2" type="search" placeholder="Buscar productos..." aria-label="Search" name="search" value="{{ search_text }}">
-        </form>
+        <p>Si estás teniendo problemas, haz una <a href="https://drive.google.com/drive/folders/1NyXQToIkYCXBBgqyMVDRBrRn-EcCwfCp?usp=sharing">consulta manual.</a></p>
     </div>
-</div>
 
-<hr>
+    <form method="post" action="/cotizacion" class="search-form">
+        <input class="form-control" type="search" placeholder="Buscar productos..." aria-label="Search" name="search" value="{{ search_text }}">
+        <button type="submit" class="search-button">🔍</button>
+    </form>
 
-<div class="row">
-    {% for part in parts %}
-    <div class="col-md-4 mb-4">
-        <div class="card">
-            <div class="card-img-top-container">
+    <div class="parts-container">
+        {% for part in parts %}
+        <div class="part-card">
+            <div class="supplier-image">
                 {% if part['supplier'] == "AT_HOME" %}
-                <img src="{{ url_for('static', filename='images/at_home_logo.jpg') }}" class="supplier.card-img-top-container phone-image" alt="...">
+                <img src="{{ url_for('static', filename='images/at_home_logo.jpg') }}" alt="AT_HOME logo">
                 {% elif part['supplier'] == "KBKA_SHOP" %}
-                <img src="{{ url_for('static', filename='images/kbka_shop_logo.jpg') }}" class="supplier.card-img-top-container phone-image" alt="...">
+                <img src="{{ url_for('static', filename='images/kbka_shop_logo.jpg') }}" alt="KBKA_SHOP logo">
+                {% elif part['supplier'] == "HONG_KONG" %}
+                <img src="{{ url_for('static', filename='images/hong_kong_logo.jpg') }}" alt="HONG_KONG logo">
                 {% else %}
-                <img src="{{ url_for('static', filename='images/supplier_default.jpg') }}" class="supplier.card-img-top-container phone-image" alt="...">
+                <img src="{{ url_for('static', filename='images/supplier_default.jpg') }}" alt="Default logo">
                 {% endif %}
             </div>
-            <div class="card-body">
-                <h5 class="card-title">{{ part['name'] }}</h5>
-                <p class="card-text"><b>Proveedor:</b> {{ part['supplier'] }}</p>
-                <p class="card-text"><b>Precio:</b> ${{ part['price'] }}</p>
+-
+            <div class="part-info">
+                <h5>{{ part['model'] }}</h5>
+                <p class="info-text"><strong>Proveedor:</strong> {{ part['supplier'] }}</p>
+                <p class="info-text"><strong>Precio:</strong> ${{ part['price'] }}</p>
                 {% if part['price'] > 600 %}
-                <p class="card-text"><b>Cotización:</b> ${{ part['price'] * 2 }}</p>
+                    {% set quote = part['price'] * 2 %}
                 {% else %}
-                <p class="card-text"><b>Cotización:</b> ${{ part['price'] + 400 }}</p>
+                    {% set quote = part['price'] + 400 %}
                 {% endif %}
+                <p class="info-text"><strong>Cotización:</strong> ${{ quote | round(0, 'ceil') // 10 * 10 }}</p>
             </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 </div>
-
 {% endblock %}

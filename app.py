@@ -9,11 +9,13 @@ from werkzeug.utils import secure_filename
 from flask_caching import Cache
 from dotenv import load_dotenv
 import user_agents
+import user_agents
 import requests
 import hashlib
 import os
 
 from modules.db_connection import get_connection
+from modules.db_connection import get_products
 from modules.db_connection import get_parts_by_name
 from modules.db_connection import new_repair_order, update_repair_order, get_repair_order, delete_repair_order, get_all_repair_orders, get_unfinished_repair_orders
 from modules.db_connection import new_order_media, get_order_media, delete_order_media
@@ -29,6 +31,7 @@ if __name__ == '__main__':
 
     # Encargado de cargar las variables establecidas en el .env
 
+    load_dotenv(override = True)
     load_dotenv(override = True)
 
     # Configuramos la aplicación para soportar la subida de imagenes
@@ -61,7 +64,11 @@ if __name__ == '__main__':
             self.name = data[1]
             self.email = data[2]
             self.password = data[3]
+            self.name = data[1]
+            self.email = data[2]
+            self.password = data[3]
             self.profile_picture = data[4]
+            self.created_at = data[5]
             self.created_at = data[5]
                 
     @login_manager.user_loader
@@ -69,6 +76,7 @@ if __name__ == '__main__':
         connection = get_connection()
 
         with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
             cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
             user = cursor.fetchone()
 
@@ -91,10 +99,12 @@ if __name__ == '__main__':
         user_agent = request.headers.get('User-Agent')
         ua = user_agents.parse(user_agent)
 
+        products = get_products()
+
         if ua.is_mobile:
-            return render_template('index_mobile.html', user=user)
+            return render_template('index_mobile.html', user=user, products=products)
         else:
-            return render_template('index.html', user=user)
+            return render_template('index.html', user=user, products=products)
     
     @app.route('/login', methods=['GET', 'POST'])
     def login() -> str:
@@ -102,8 +112,10 @@ if __name__ == '__main__':
             return render_template('login.html')
         else:
             email = request.form['email']
+            email = request.form['email']
             password = request.form['password']
 
+            possible_user = get_user(email)
             possible_user = get_user(email)
 
             if possible_user and hashlib.md5(password.encode()).hexdigest() == possible_user[3]:
@@ -130,7 +142,9 @@ if __name__ == '__main__':
             keywords = []
 
         parts = get_parts_by_name(keywords)
+        parts = get_parts_by_name(keywords)
 
+        return render_template('parts.html', parts=parts, search_text='')
         return render_template('parts.html', parts=parts, search_text='')
     
     @app.route('/liberaciones', methods=['GET'])
@@ -175,6 +189,7 @@ if __name__ == '__main__':
     @login_required
     def all_orders():
         orders = get_all_repair_orders()
+        orders = get_all_repair_orders()
         return render_template('all_orders.html', orders=orders)
 
     @app.route('/ordenes', methods=['GET', 'POST'])
@@ -183,17 +198,29 @@ if __name__ == '__main__':
         if request.method == 'POST':
             client_name = request.form.get('client_name')
             model = request.form.get('model')
+            client_name = request.form.get('client_name')
+            model = request.form.get('model')
             service = request.form.get('service')
+            observations = request.form.get('observations', '')
             observations = request.form.get('observations', '')
             cost = float(request.form.get('cost'))
             investment = float(request.form.get('investment'))
             new_repair_order(client_name, current_user.id, model, service, observations, cost, investment)
+            investment = float(request.form.get('investment'))
+            new_repair_order(client_name, current_user.id, model, service, observations, cost, investment)
             return redirect(url_for('orders'))
 
-        # Solo cargamos las ordenes pendientes.
+        user_agent = request.headers.get('User-Agent')
+        ua = user_agents.parse(user_agent)
 
+        # Solo cargamos las ordenes pendientes.
         orders = get_unfinished_repair_orders()
-        return render_template('orders.html', orders=orders)
+
+        if ua.is_mobile:
+            return render_template('orders_mobile.html', orders=orders)
+        else:
+            return render_template('orders.html', orders=orders)
+
     
     @app.route('/ordenes/validar/<int:repair_order_id>', methods=['POST'])
     @login_required
@@ -205,6 +232,7 @@ if __name__ == '__main__':
 
         with connection.cursor() as cursor:
             cursor.execute("UPDATE repair_orders SET status = 'Entregado', delivered_at = NOW() WHERE repair_order_id = %s", (repair_order_id,))
+            cursor.execute("UPDATE repair_orders SET status = 'Entregado', delivered_at = NOW() WHERE repair_order_id = %s", (repair_order_id,))
 
         connection.commit()
         connection.close()
@@ -214,6 +242,7 @@ if __name__ == '__main__':
     @app.route('/ordenes/eliminar/<int:order_id>', methods=['POST'])
     @login_required
     def delete_order_route(order_id):
+        delete_repair_order(order_id)
         delete_repair_order(order_id)
         return redirect(url_for('orders'))
     
@@ -232,22 +261,26 @@ if __name__ == '__main__':
     """
 
     @app.route('/ordenes/eliminar_foto/<int:media_id>', methods=['POST'])
+    @app.route('/ordenes/eliminar_foto/<int:media_id>', methods=['POST'])
     @login_required
+    def delete_photo(media_id):
+        delete_order_media(media_id)
     def delete_photo(media_id):
         delete_order_media(media_id)
         return redirect(url_for('orders'))
 
-    @app.route('/ordenes/editar/<int:order_id>', methods=['GET', 'POST'])
+    @app.route('/ordenes/editar/<int:repair_order_id>', methods=['GET', 'POST'])
     @login_required
-    def edit_order(order_id):
+    def edit_order(repair_order_id):
         if request.method == 'POST':
-            name = request.form['name']
+            client_name = request.form['client_name']
+            model = request.form['model']
             service = request.form['service']
-            notes = request.form['notes']
+            observations = request.form['observations']
             cost = request.form['cost']
             investment = request.form['investment']
 
-            update_repair_order(name, service, notes, cost, investment, order_id)
+            update_repair_order(client_name, model, service, observations, cost, investment, repair_order_id)
             
             if 'files' in request.files:
                 files = request.files.getlist('files')
@@ -255,22 +288,29 @@ if __name__ == '__main__':
                     if file and allowed_file(file.filename):
                         filename = secure_filename(file.filename)
                         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                        compressed_path = os.path.join(app.config['UPLOAD_FOLDER'], f'{order_id}_' + filename)
+                        compressed_path = os.path.join(app.config['UPLOAD_FOLDER'], f'{repair_order_id}_' + filename)
                         file.save(file_path)
                         compress_image(file_path, compressed_path)
                         os.remove(file_path)
 
-                        new_order_media(order_id, f'order_photos/{order_id}_{filename}'.replace('\\', '/'))
+                        new_order_media(repair_order_id, f'order_photos/{repair_order_id}_{filename}'.replace('\\', '/'))
 
-        order = get_repair_order(order_id)
-        order_media = get_order_media(order_id)
+        order = get_repair_order(repair_order_id)
+        order_media = get_order_media(repair_order_id)
 
         # Si la orden que esta siendo editada no contiene imagenes mandamos una imagen nula default.
 
         if order_media == ():
-            order_media = ({'id': -1, 'order_id': -1,'directory': 'order_photos/no_image.jpg'},)
+            order_media = ({'media_id': -1, 'order_id': -1,'directory': 'order_photos/no_image.jpg'},)
 
-        return render_template('edit_order.html', order=order, order_media=order_media)
+        user_agent = request.headers.get('User-Agent')
+        ua = user_agents.parse(user_agent)
+
+        if ua.is_mobile:
+            return render_template('edit_order_mobile.html', order=order, order_media=order_media)
+        else:
+            return render_template('edit_order.html', order=order, order_media=order_media)
+
 
     @app.route('/marcas')
     @login_required
@@ -346,23 +386,24 @@ if __name__ == '__main__':
     @login_required
     def order_stats():
 
-        # TODO: Mover la lógica a modules/db_connection.py
-        # TODO: Hacer que la información sea relacionada al usuario solamente.
-
         connection = get_connection()
         cursor = connection.cursor()
 
         cursor.execute("SELECT SUM(cost) FROM repair_orders WHERE status='Entregado'")
+        cursor.execute("SELECT SUM(cost) FROM repair_orders WHERE status='Entregado'")
         delivered_cost = cursor.fetchone()[0] or 0
 
+        cursor.execute("SELECT SUM(investment) FROM repair_orders WHERE status='Entregado'")
         cursor.execute("SELECT SUM(investment) FROM repair_orders WHERE status='Entregado'")
         delivered_investment = cursor.fetchone()[0] or 0
 
         profit = delivered_cost - delivered_investment
         
         cursor.execute("SELECT SUM(cost) FROM repair_orders WHERE status='Pendiente'")
+        cursor.execute("SELECT SUM(cost) FROM repair_orders WHERE status='Pendiente'")
         pending_cost = cursor.fetchone()[0] or 0
 
+        cursor.execute("SELECT SUM(investment) FROM repair_orders WHERE status='Pendiente'")
         cursor.execute("SELECT SUM(investment) FROM repair_orders WHERE status='Pendiente'")
         pending_investment = cursor.fetchone()[0] or 0
 

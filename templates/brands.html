@@ -3,6 +3,8 @@
 {% block title %}Marcas - REI Web Assistant{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/brands.css') }}">
+
 <h2>Marcas de Celulares</h2>
 <p>Las consultas pueden tardar debido a que estamos usando la <a href="https://github.com/azharimm/phone-specs-api">Phone Specifications API</a>.</p>
 <!-- Barra de búsqueda -->

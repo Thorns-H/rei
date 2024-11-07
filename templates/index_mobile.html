@@ -1,35 +1,42 @@
 {% extends "base.html" %}
 
-{% block title %}Home - REI Web Assistant{% endblock %}
+{% block title %}Productos - REI Web Assistant{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index_mobile.css') }}">
+
 <div class="container-fluid">
+    <!-- Barra de búsqueda -->
     <div class="row">
-        <div class="col-lg-6 mb-3">
-            <div class="card h-100">
-                <div class="card-body">
-                    <h3 class="card-title">Ganancias Mensuales</h3>
-                    <hr class="my-4">
-                    <canvas id="orderChart" width="400" height="400"></canvas>
+        <div class="col-12 mb-3">
+            <input type="text" id="search" class="form-control" placeholder="Buscar productos...">
+        </div>
+    </div>
+
+    <!-- Lista de productos -->
+    <div class="row" id="productContainer">
+        {% for product in products %}
+        <div class="col-12 mb-3">
+            <div class="product-list-item">
+                <!-- Nombre del producto -->
+                <h6 class="product-name">{{ product['name'] }}</h6>
+
+                <!-- Información adicional del producto -->
+                <div class="product-details">
+                    <div class="product-details-row">
+                        <p class="product-info"><b>Categoría:</b> {{ product['category'] }}</p>
+                        <p class="product-info-price">${{ product['price'] }}</p>
+                    </div>
+                    <p class="product-info"><b>Stock:</b> {{ product['stock'] }}</p>
+                </div>
+
+                <!-- Botón para crear orden al lado derecho de la información -->
+                <div class="product-action">
+                    <button class="btn btn-primary">Crear Orden</button>
                 </div>
             </div>
         </div>
-
-        <div class="col-lg-6">
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">{{ user.name.split()[0] }} USR-{{ user.id }}</h5>
-                    <p class="card-text">{{ user.profile_picture }}</p>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Agregar una nota.</h5>
-                    <p class="card-text">Formulario.</p>
-                </div>
-            </div>
-        </div>
+        {% endfor %}
     </div>
 </div>
 

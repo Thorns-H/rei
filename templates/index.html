@@ -4,48 +4,86 @@
 
 {% block content %}
 
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-6">
-            <div class="card h-100" style="background-color: rgba(255, 255, 255, 0.8);">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 card-gradient card-bg-green">
                 <div class="card-body">
-                    <h2 class="card-title">Ganancias Mensuales</h2>
-                    <canvas id="orderChart" width="400" height="400"></canvas>
+                    <h3 class="card-color-title">Ganancias</h3>
+                    <p class="card-text money-text" id="profitAmount">$0.00</p>
                 </div>
             </div>
         </div>
-           
-        <div class="col-md-6">
-            <div class="row h-50">
-                <div class="col-12">
-                    <div class="card h-100" style="background-color: rgba(255, 255, 255, 0.8);">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h3 class="card-title">USR-{{ "%05d"|format(user.id) }}</h3>
-                                    <p class="card-text">{{ user.name }}</p>
-                                </div>
-                                <img src="{{ url_for('static', filename='images/' + user.profile_picture) }}" alt="Profile Picture" class="rounded-circle" style="width: 100px; height: 100px;">
-                            </div>                            
-                        </div>
-                    </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 card-gradient card-bg-red">
+                <div class="card-body">
+                    <h3 class="card-color-title">Pendientes</h3>
+                    <p class="card-text money-text" id="pendingAmount">$0.00</p>
                 </div>
             </div>
+        </div>
 
-            <div class="row h-50 mt-3">
-                <div class="col-12">
-                    <div class="card h-100" style="background-color: rgba(255, 255, 255, 0.8);">
-                        <div class="card-body">
-                            <h3 class="card-title">Agregar una nota.</h3>
-                            <p class="card-text">Formulario.</p>
-                        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 card-gradient card-bg-yellow">
+                <div class="card-body">
+                    <h3 class="card-color-title">Inversión</h3>
+                    <p class="card-text money-text" id="investAmount">$0.00</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card h-100 user-card">
+                <div class="card-body d-flex align-items-center">
+                    <img src="{{ url_for('static', filename='images/' + user.profile_picture) }}" alt="Profile Picture" class="rounded-circle profile-picture">
+                    <div class="user-info">
+                        <h3 class="user-name">{{ user.name }}</h3>
+                        <p class="user-text"><b>ID:</b> USR-{{ "%05d"|format(user.id) }}</p>
+                        <p class="user-text"><b>Email:</b> {{ user.email }}</p>
+                        <p class="user-text"><b>Miembro desde:</b> {{ user.created_at.strftime('%d/%m/%Y') }}</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+
+    <hr>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <input type="text" id="search" class="form-control" placeholder="Buscar productos...">
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-12">
+            <div id="productContainer" class="product-list">
+                {% for product in products %}
+                <div class="product-list-item">
+                    <div class="product-image-container">
+                        <img src="{{ url_for('static', filename='images/' + product['image']) }}" alt="{{ product['name'] }}" class="product-list-image">
+                    </div>
+                    <div class="product-details">
+                        <h5 class="product-name">{{ product['name'] }}</h5>
+                        <p class="product-info"><b>Categoría:</b> {{ product['category'] }}</p>
+                        <p class="product-info"><b>Precio:</b> ${{ product['price'] }}</p>
+                        <p class="product-info"><b>Stock:</b> {{ product['stock'] }}</p>
+                    </div>
+                    <div class="product-action">
+                        <button class="btn btn-primary">Crear Orden</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+
 {% endblock %}

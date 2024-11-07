@@ -4,36 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}REI Web Assistant{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <style>
         body {
-            background-image: url('{{ url_for('static', filename='images/background.jpg') }}');
-            background-size: cover; 
-            background-repeat: no-repeat; 
-            background-attachment: fixed; 
-        }
-        .navbar {
-            background-color: #007bff;
-        }
-        .card-img-top-rei {
-            width: 100%;
-            height: 120px;
-            overflow: hidden;
-        }
-        .card-img-top-container {
-            width: 100%;
-            height: 150px;
-            overflow: hidden;
-        }
-        .supplier.card-img-top-container {
-            width: 100%;
-            height: 150px;
-            overflow: hidden;
-        }
-        .phone-image {
-            width: 100%;
-            height: 100%;
-            object-fit: scale-down;
+            font-family: 'Roboto', sans-serif;
         }
     </style>
 </head>

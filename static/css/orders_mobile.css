@@ -1,0 +1,101 @@
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Card container */
+.card {
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Título dentro del formulario */
+.card-header {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* Estilos de los botones */
+.btn {
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+/* Estilos para el formulario */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-control {
+    border-radius: 5px;
+    padding: 10px;
+}
+
+/* Estilo para las listas de órdenes */
+.order-list-container {
+    margin-top: 20px;
+}
+
+.order-list-container .section-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.orders {
+    margin-top: 20px;
+}
+
+/* Estilos de las tarjetas de órdenes */
+.order-card {
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.order-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.order-actions form {
+    margin: 0;
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 768px) {
+    .order-form-container,
+    .order-list-container {
+        margin: 10px;
+    }
+
+    .order-actions button {
+        width: 100%; /* Los botones ocupan todo el ancho */
+    }
+}

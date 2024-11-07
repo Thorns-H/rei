@@ -1,0 +1,112 @@
+/* Mobile - Estilos para productos con nombre en una fila separada */
+@media (max-width: 768px) {
+    /* Contenedor principal */
+    .container-fluid {
+        padding: 10px;
+        background-color: #f4f4f9; /* Fondo suave para toda la página */
+    }
+
+    /* Barra de búsqueda */
+    #search {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        background-color: #ffffff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        font-size: 1rem;
+        transition: border-color 0.3s ease-in-out;
+    }
+
+    #search:focus {
+        border-color: #007bff;
+        outline: none;
+    }
+
+    /* Listado de productos */
+    .product-list-item {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        background-color: #ffffff;
+        padding: 12px 15px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+    }
+
+    .product-list-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Detalles del producto */
+    .product-details {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        color: #333;
+        margin-bottom: 8px;
+    }
+
+    /* Nombre del producto */
+    .product-name {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+        white-space: normal;
+        word-wrap: break-word;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Información adicional (categoría, precio, stock) */
+    .product-info {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 6px;
+    }
+
+    /* Mostrar categoría, precio y stock en una fila */
+    .product-details-row {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        align-items: center;
+    }
+
+    .product-info-price {
+        font-weight: bold;
+    }
+
+    /* Botón de acción al lado derecho */
+    .product-action {
+        display: flex;
+        align-items: center;
+        margin-left: 10px;
+    }
+
+    .product-action .btn {
+        font-size: 0.9rem;
+        padding: 8px 14px;
+        min-width: 100px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        transition: background-color 0.3s ease;
+    }
+
+    .product-action .btn:hover {
+        background-color: #0056b3;
+    }
+
+    /* Sombra de los botones y productos */
+    .product-list-item, .product-action .btn {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+}

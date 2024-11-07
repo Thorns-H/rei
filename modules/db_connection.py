@@ -21,21 +21,6 @@ def get_connection() -> pymysql.connections.Connection:
     db_port = int(os.getenv("DB_PORT"))
 
     return pymysql.connect(host = db_host, user = db_user, password = db_password, db = db_name, port = db_port, ssl = None)
-
-class repair_part:
-    def __init__(self, data: tuple) -> None:
-        self.repair_part_id = data[0]
-        self.model = data[1]
-        self.supplier = data[2]
-        self.price = data[3]
-
-    def to_dict(self) -> None:
-        return {
-            'repair_part_id': self.repair_part_id,
-            'model': self.model,
-            'supplier': self.supplier,
-            'price': self.price
-        }
     
 def convert_set(table: tuple, type: str) -> tuple:
 
@@ -48,8 +33,65 @@ def convert_set(table: tuple, type: str) -> tuple:
             items.append(repair_order(item).to_dict())
         elif type == 'order_media':
             items.append(order_media(item).to_dict())
+        elif type == 'product':
+            items.append(product(item).to_dict())
         
     return tuple(items)
+
+class product:
+    def __init__(self, data: tuple) -> None:
+        self.product_id = data[0]
+        self.name = data[1]
+        self.image = data[2]
+        self.category = data[3]
+        self.description = data[4]
+        self.price = data[5]
+        self.stock = data[6]
+        self.created_at = data[7]
+
+    def to_dict(self) -> None:
+        return {
+            'product_id': self.product_id,
+            'name': self.name,
+            'image': self.image,
+            'category': self.category,
+            'description': self.description,
+            'price': self.price,
+            'stock': self.stock,
+            'created_at': self.created_at
+        }
+    
+def get_products() -> tuple:
+    try:
+        connection = get_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM products")
+            products = cursor.fetchall()
+
+        connection.close()
+
+        return convert_set(products, 'product')
+    except Exception as e:
+        print(f"Error ({e}) at modules/db_connection func 'get_products'")
+        return False
+    
+class repair_part:
+    def __init__(self, data: tuple) -> None:
+        self.repair_part_id = data[0]
+        self.model = data[1]
+        self.supplier = data[2]
+        self.price = data[3]
+
+    def to_dict(self) -> None:
+        return {
+            'repair_part_id': self.repair_part_id,
+            'model': self.model,
+            'repair_part_id': self.repair_part_id,
+            'model': self.model,
+            'supplier': self.supplier,
+            'price': self.price
+        }
 
 def get_parts_by_name(keywords: list) -> tuple:
     
@@ -119,13 +161,13 @@ def new_repair_order(client_name: str, user_id: str, model: str, service: str, o
     except Exception as e:
         print(f"{RED}Error ({e}) at modules/db_connection func 'new_repair_order'{RESTORE}")
         return False
-    
+
 def get_repair_order(order_id: int) -> tuple:
     try:
         connection = get_connection()
 
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM orders WHERE order_id = %s", (order_id,))
+            cursor.execute("SELECT * FROM repair_orders WHERE repair_order_id = %s", (order_id,))
             order_result = cursor.fetchone()
 
         connection.close()
@@ -135,6 +177,7 @@ def get_repair_order(order_id: int) -> tuple:
         print(f"Error ({e}) at modules/db_connection func 'get_order'")
         return False
     
+
 def update_repair_order(client_name: str, model: str, service: str, observations: str, cost: float, investment: float, repair_order_id: int) ->  bool:
     try:
         connection = get_connection()
@@ -197,12 +240,13 @@ def delete_repair_order(repair_order_id: int) -> bool:
 class order_media:
     def __init__(self, data: tuple) -> None:
         self.media_id = data[0]
+        self.media_id = data[0]
         self.order_id = data[1]
         self.directory = data[2]
 
     def to_dict(self) -> dict:
         return {
-            'media_id': self.id,
+            'media_id': self.media_id,
             'order_id': self.order_id,
             'directory': self.directory
         }
@@ -248,12 +292,12 @@ def delete_order_media(media_id: int) -> bool:
         print(f"Error ({e}) at modules/db_connection func 'delete_order_media'")
         return False
     
-def get_order_media(media_id: int) -> bool:
+def get_order_media(repair_order_id: int) -> bool:
     try:
         connection = get_connection()
 
         with connection.cursor() as cursor:
-            cursor.execute(f"SELECT * FROM order_media WHERE media_id = '{media_id}' ORDER BY media_id DESC")
+            cursor.execute(f"SELECT * FROM order_media WHERE repair_order_id = '{repair_order_id}' ORDER BY repair_order_id DESC")
             order_photos = cursor.fetchall()
 
         connection.close()

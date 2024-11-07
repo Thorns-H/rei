@@ -1,0 +1,74 @@
+/* Título de las secciones */
+.section-title {
+    font-weight: bold;
+    color: #343a40;
+    margin-bottom: 15px;
+}
+
+/* Contenedor principal para ambos apartados */
+.orders-container {
+    display: flex;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+/* Contenedor para el formulario de creación de orden (más pequeño) */
+.order-form-container {
+    flex: 0.6; /* Hace que el formulario ocupe menos espacio */
+}
+
+.order-form-container .card {
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.order-form-container .form-group {
+    margin-bottom: 15px;
+}
+
+.order-form-container .btn-primary {
+    width: 100%;
+}
+
+/* Contenedor para la lista de órdenes pendientes */
+.order-list-container {
+    flex: 1.5;
+}
+
+.order-list-container h3 {
+    font-weight: bold;
+    color: #343a40;
+    margin-bottom: 15px;
+}
+
+.orders {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Estilos para cada tarjeta de orden */
+.order-card {
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.order-card .card-body {
+    padding: 15px;
+}
+
+.order-status {
+    color: red;
+    font-weight: bold;
+}
+
+.order-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Botones en las órdenes */
+.order-actions .btn {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+}
