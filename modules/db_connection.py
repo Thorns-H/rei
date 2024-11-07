@@ -256,7 +256,7 @@ def new_order_media(order_id: int, directory: str) -> bool:
         connection = get_connection()
 
         with connection.cursor() as cursor:
-            cursor.execute("INSERT INTO order_media (order_id, directory)VALUES (%s, %s)", (order_id, directory))
+            cursor.execute("INSERT INTO order_media (repair_order_id, directory)VALUES (%s, %s)", (order_id, directory))
 
         connection.commit()
         connection.close()

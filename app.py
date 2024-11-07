@@ -3,12 +3,12 @@
     en este apartado, recomiendo usar .env en todo momento.
 """
 
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, Response
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.utils import secure_filename
 from flask_caching import Cache
 from dotenv import load_dotenv
-import user_agents
+from typing import Optional
 import user_agents
 import requests
 import hashlib
@@ -63,14 +63,11 @@ if __name__ == '__main__':
             self.name = data[1]
             self.email = data[2]
             self.password = data[3]
-            self.name = data[1]
-            self.email = data[2]
-            self.password = data[3]
             self.profile_picture = data[4]
             self.created_at = data[5]
                 
     @login_manager.user_loader
-    def load_user(user_id):
+    def load_user(user_id) -> Optional[User]:
         connection = get_connection()
 
         with connection.cursor() as cursor:
@@ -91,7 +88,7 @@ if __name__ == '__main__':
 
     @app.route('/')
     @login_required
-    def index():
+    def index() -> Response:
         user = current_user
         user_agent = request.headers.get('User-Agent')
         ua = user_agents.parse(user_agent)
@@ -104,7 +101,7 @@ if __name__ == '__main__':
             return render_template('index.html', user=user, products=products)
     
     @app.route('/login', methods=['GET', 'POST'])
-    def login() -> str:
+    def login() -> Response:
         if request.method == 'GET':
             return render_template('login.html')
         else:
@@ -122,13 +119,13 @@ if __name__ == '__main__':
 
     @app.route('/logout')
     @login_required
-    def logout() -> str:
+    def logout() -> Response:
         logout_user()
         return redirect(url_for('login'))
     
     @app.route('/cotizacion', methods=['GET', 'POST'])
     @login_required
-    def price_request() -> str:
+    def price_request() -> Response:
 
         if request.method == 'POST':
             search_text = request.form.get('search', '').strip()
@@ -142,7 +139,7 @@ if __name__ == '__main__':
     
     @app.route('/liberaciones', methods=['GET'])
     @login_required
-    def unlocks() -> str:
+    def unlocks() -> Response:
         return render_template('unlocks.html')
     
     """
@@ -154,13 +151,13 @@ if __name__ == '__main__':
 
     @app.route('/generate_temp_email')
     @login_required
-    def generate_temp_email_route():
+    def generate_temp_email_route() -> dict:
         username, domain, email_address = generate_temp_email()  
         return jsonify({"username": username, "domain": domain, "email_address": email_address})
     
     @app.route('/read_email/<username>/<domain>/<mail_id>')
     @login_required
-    def get_email_content(username, domain, mail_id):
+    def get_email_content(username, domain, mail_id) -> dict:
         api_url = f"https://www.1secmail.com/api/v1/?action=readMessage&login={username}&domain={domain}&id={mail_id}"
         response = requests.get(api_url)
         if response.status_code == 200:
@@ -170,7 +167,7 @@ if __name__ == '__main__':
 
     @app.route('/check_inbox/<username>/<domain>')
     @login_required
-    def check_inbox(username, domain):
+    def check_inbox(username, domain) -> dict:
         api_url = f"https://www.1secmail.com/api/v1/?action=getMessages&login={username}&domain={domain}"
         response = requests.get(api_url)
         if response.status_code == 200:
@@ -180,13 +177,13 @@ if __name__ == '__main__':
     
     @app.route('/ordenes/todas', methods=['GET'])
     @login_required
-    def all_orders():
+    def all_orders() -> Response:
         orders = get_all_repair_orders()
         return render_template('all_orders.html', orders=orders)
 
     @app.route('/ordenes', methods=['GET', 'POST'])
     @login_required
-    def orders():
+    def orders() -> Response:
         if request.method == 'POST':
             client_name = request.form.get('client_name')
             model = request.form.get('model')
@@ -211,7 +208,7 @@ if __name__ == '__main__':
     
     @app.route('/ordenes/validar/<int:repair_order_id>', methods=['POST'])
     @login_required
-    def validate_order(repair_order_id):
+    def validate_order(repair_order_id) -> Response:
 
         # TODO: Mover toda esta lógica a modules/db_connection.py
 
@@ -227,7 +224,7 @@ if __name__ == '__main__':
 
     @app.route('/ordenes/eliminar/<int:order_id>', methods=['POST'])
     @login_required
-    def delete_order_route(order_id):
+    def delete_order_route(order_id) -> Response:
         delete_repair_order(order_id)
         return redirect(url_for('orders'))
     
@@ -247,13 +244,13 @@ if __name__ == '__main__':
 
     @app.route('/ordenes/eliminar_foto/<int:media_id>', methods=['POST'])
     @login_required
-    def delete_photo(media_id):
+    def delete_photo(media_id) -> Response:
         delete_order_media(media_id)
         return redirect(url_for('orders'))
 
     @app.route('/ordenes/editar/<int:repair_order_id>', methods=['GET', 'POST'])
     @login_required
-    def edit_order(repair_order_id):
+    def edit_order(repair_order_id) -> Response:
         if request.method == 'POST':
             client_name = request.form['client_name']
             model = request.form['model']
@@ -296,7 +293,7 @@ if __name__ == '__main__':
 
     @app.route('/marcas')
     @login_required
-    def brands() -> str:
+    def brands() -> Response:
         search_query = request.args.get('search', '').lower()
         error = None
 
@@ -315,7 +312,7 @@ if __name__ == '__main__':
         
     @app.route('/marcas/<brand_slug>')
     @login_required
-    def information(brand_slug) -> str:
+    def information(brand_slug) -> Response:
         search_query = request.args.get('search', '').lower()
         page = request.args.get('page', 1, type=int)
         error = None
@@ -332,7 +329,6 @@ if __name__ == '__main__':
                 last_page = data['data']['last_page']
                 phones = data['data']['phones']
 
-                # Si la página actual está vacía y no es la primera página, cargar la última página válida
                 if not phones and current_page > 1:
                     return redirect(url_for('information', brand_slug=brand_slug, page=last_valid_page, search=search_query))
 
@@ -353,20 +349,20 @@ if __name__ == '__main__':
 
         return render_template('phones.html', title=title, brand_slug=brand_slug, phones=phones, current_page=page, last_page=last_page, search_query=search_query, error=error)
 
-    def get_phone_details(detail_url):
+    def get_phone_details(detail_url) -> dict:
         response = requests.get(detail_url)
         return response.json()
 
     @app.route('/details/', methods=['GET'])
     @login_required
-    def phone_details():
+    def phone_details() -> Response:
         detail_url = request.args.get('url')
         phone = get_phone_details(detail_url)
         return render_template('phone_details.html', phone=phone['data'])
 
     @app.route('/api/order-stats', methods=['GET'])
     @login_required
-    def order_stats():
+    def order_stats() -> dict:
 
         connection = get_connection()
         cursor = connection.cursor()
