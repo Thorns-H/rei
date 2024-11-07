@@ -32,7 +32,6 @@ if __name__ == '__main__':
     # Encargado de cargar las variables establecidas en el .env
 
     load_dotenv(override = True)
-    load_dotenv(override = True)
 
     # Configuramos la aplicación para soportar la subida de imagenes
 
@@ -69,14 +68,12 @@ if __name__ == '__main__':
             self.password = data[3]
             self.profile_picture = data[4]
             self.created_at = data[5]
-            self.created_at = data[5]
                 
     @login_manager.user_loader
     def load_user(user_id):
         connection = get_connection()
 
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
             cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
             user = cursor.fetchone()
 
@@ -112,10 +109,8 @@ if __name__ == '__main__':
             return render_template('login.html')
         else:
             email = request.form['email']
-            email = request.form['email']
             password = request.form['password']
 
-            possible_user = get_user(email)
             possible_user = get_user(email)
 
             if possible_user and hashlib.md5(password.encode()).hexdigest() == possible_user[3]:
@@ -142,9 +137,7 @@ if __name__ == '__main__':
             keywords = []
 
         parts = get_parts_by_name(keywords)
-        parts = get_parts_by_name(keywords)
 
-        return render_template('parts.html', parts=parts, search_text='')
         return render_template('parts.html', parts=parts, search_text='')
     
     @app.route('/liberaciones', methods=['GET'])
@@ -189,7 +182,6 @@ if __name__ == '__main__':
     @login_required
     def all_orders():
         orders = get_all_repair_orders()
-        orders = get_all_repair_orders()
         return render_template('all_orders.html', orders=orders)
 
     @app.route('/ordenes', methods=['GET', 'POST'])
@@ -198,14 +190,9 @@ if __name__ == '__main__':
         if request.method == 'POST':
             client_name = request.form.get('client_name')
             model = request.form.get('model')
-            client_name = request.form.get('client_name')
-            model = request.form.get('model')
             service = request.form.get('service')
             observations = request.form.get('observations', '')
-            observations = request.form.get('observations', '')
             cost = float(request.form.get('cost'))
-            investment = float(request.form.get('investment'))
-            new_repair_order(client_name, current_user.id, model, service, observations, cost, investment)
             investment = float(request.form.get('investment'))
             new_repair_order(client_name, current_user.id, model, service, observations, cost, investment)
             return redirect(url_for('orders'))
@@ -232,7 +219,6 @@ if __name__ == '__main__':
 
         with connection.cursor() as cursor:
             cursor.execute("UPDATE repair_orders SET status = 'Entregado', delivered_at = NOW() WHERE repair_order_id = %s", (repair_order_id,))
-            cursor.execute("UPDATE repair_orders SET status = 'Entregado', delivered_at = NOW() WHERE repair_order_id = %s", (repair_order_id,))
 
         connection.commit()
         connection.close()
@@ -242,7 +228,6 @@ if __name__ == '__main__':
     @app.route('/ordenes/eliminar/<int:order_id>', methods=['POST'])
     @login_required
     def delete_order_route(order_id):
-        delete_repair_order(order_id)
         delete_repair_order(order_id)
         return redirect(url_for('orders'))
     
@@ -261,10 +246,7 @@ if __name__ == '__main__':
     """
 
     @app.route('/ordenes/eliminar_foto/<int:media_id>', methods=['POST'])
-    @app.route('/ordenes/eliminar_foto/<int:media_id>', methods=['POST'])
     @login_required
-    def delete_photo(media_id):
-        delete_order_media(media_id)
     def delete_photo(media_id):
         delete_order_media(media_id)
         return redirect(url_for('orders'))
@@ -390,20 +372,16 @@ if __name__ == '__main__':
         cursor = connection.cursor()
 
         cursor.execute("SELECT SUM(cost) FROM repair_orders WHERE status='Entregado'")
-        cursor.execute("SELECT SUM(cost) FROM repair_orders WHERE status='Entregado'")
         delivered_cost = cursor.fetchone()[0] or 0
 
-        cursor.execute("SELECT SUM(investment) FROM repair_orders WHERE status='Entregado'")
         cursor.execute("SELECT SUM(investment) FROM repair_orders WHERE status='Entregado'")
         delivered_investment = cursor.fetchone()[0] or 0
 
         profit = delivered_cost - delivered_investment
         
         cursor.execute("SELECT SUM(cost) FROM repair_orders WHERE status='Pendiente'")
-        cursor.execute("SELECT SUM(cost) FROM repair_orders WHERE status='Pendiente'")
         pending_cost = cursor.fetchone()[0] or 0
 
-        cursor.execute("SELECT SUM(investment) FROM repair_orders WHERE status='Pendiente'")
         cursor.execute("SELECT SUM(investment) FROM repair_orders WHERE status='Pendiente'")
         pending_investment = cursor.fetchone()[0] or 0
 
