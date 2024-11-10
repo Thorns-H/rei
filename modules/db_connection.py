@@ -5,10 +5,16 @@
 
 import pymysql
 import os
+import sys
 from dotenv import load_dotenv
 
+from modules.db_objects import product, repair_part, repair_order, order_media
+
 RED = "\033[91m"
-RESTORE = "\033[0m"
+YELLOW = "\033[93m"
+RESET = "\033[0m"
+
+# Helpers para el resto de funciones en el código.
 
 def get_connection() -> pymysql.connections.Connection:
 
@@ -38,116 +44,38 @@ def convert_set(table: tuple, type: str) -> tuple:
         
     return tuple(items)
 
-class product:
-    def __init__(self, data: tuple) -> None:
-        self.product_id = data[0]
-        self.name = data[1]
-        self.image = data[2]
-        self.category = data[3]
-        self.description = data[4]
-        self.price = data[5]
-        self.stock = data[6]
-        self.created_at = data[7]
+# Relacionado con la entidad 'notes'
 
-    def to_dict(self) -> None:
-        return {
-            'product_id': self.product_id,
-            'name': self.name,
-            'image': self.image,
-            'category': self.category,
-            'description': self.description,
-            'price': self.price,
-            'stock': self.stock,
-            'created_at': self.created_at
-        }
-    
-def get_products() -> tuple:
+# TODO
+
+# Relacionado a la entidad 'users'
+
+def get_user(email: str) -> str:
     try:
         connection = get_connection()
 
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM products")
-            products = cursor.fetchall()
+            cursor.execute(f"SELECT * FROM users WHERE email = '{email}'")
+            user = cursor.fetchone()
 
         connection.close()
 
-        return convert_set(products, 'product')
+        return user
     except Exception as e:
-        print(f"Error ({e}) at modules/db_connection func 'get_products'")
-        return False
-    
-class repair_part:
-    def __init__(self, data: tuple) -> None:
-        self.repair_part_id = data[0]
-        self.model = data[1]
-        self.supplier = data[2]
-        self.price = data[3]
+        print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'get_user'")
+        sys.exit(1)
 
-    def to_dict(self) -> None:
-        return {
-            'repair_part_id': self.repair_part_id,
-            'model': self.model,
-            'repair_part_id': self.repair_part_id,
-            'model': self.model,
-            'supplier': self.supplier,
-            'price': self.price
-        }
+# Relacionado a la entidad 'sale_orders'
 
-def get_parts_by_name(keywords: list) -> tuple:
-    
-    try:
-        connection = get_connection()
+# TODO
 
-        if not keywords:
-            return ()
+# Relacionado a la entidad 'sale_order_products'
 
-        query = "SELECT * FROM repair_parts WHERE "
-        conditions = [f"model LIKE '%{keyword}%'" for keyword in keywords]
-        query += " AND ".join(conditions)
+# TODO
 
-        with connection.cursor() as cursor:
-            cursor.execute(query)
-            parts = cursor.fetchall()
+# Relacionado a la entidad 'repair_orders'
 
-        connection.close()
-
-        return convert_set(parts, 'repair_part')
-
-    except Exception as e:
-        print(f"Error ({e}) at modules/db_connection at func get_parts_by_name")
-        return False
-    
-class repair_order:
-    def __init__(self, data: tuple = None) -> None:
-        self.repair_order_id = data[0]
-        self.user_id = data[1]
-        self.repair_part_id = data[2]
-        self.client_name = data[3]
-        self.created_at = data[4]
-        self.delivered_at = data[5]
-        self.model = data[6]
-        self.service = data[7]
-        self.observations = data[8]
-        self.cost = data[9]
-        self.investment = data[10]
-        self.status = data[11]
-
-    def to_dict(self) -> dict:
-        return {
-            'repair_order_id': self.repair_order_id,
-            'user_id': self.user_id,
-            'client_name': self.client_name,
-            'created_at': self.created_at,
-            'delivered_at': self.delivered_at,
-            'model': self.model,
-            'service': self.service,
-            'observations': self.observations,
-            'cost': self.cost,
-            'investment': self.investment,
-            'status': self.status
-        }
-
-def new_repair_order(client_name: str, user_id: str, model: str, service: str, observations: str, cost: float, investment: float) -> bool:
+def new_repair_order(client_name: str, user_id: str, model: str, service: str, observations: str, cost: float, investment: float) -> None:
     try:
         connection = get_connection()
 
@@ -157,10 +85,9 @@ def new_repair_order(client_name: str, user_id: str, model: str, service: str, o
         connection.commit()
         connection.close()
 
-        return True
     except Exception as e:
-        print(f"{RED}Error ({e}) at modules/db_connection func 'new_repair_order'{RESTORE}")
-        return False
+        print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'new_repair_order'")
+        sys.exit(1)
 
 def get_repair_order(order_id: int) -> tuple:
     try:
@@ -173,11 +100,11 @@ def get_repair_order(order_id: int) -> tuple:
         connection.close()
 
         return repair_order(order_result).to_dict()
-    except Exception as e:
-        print(f"Error ({e}) at modules/db_connection func 'get_order'")
-        return False
-    
 
+    except Exception as e:
+        print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'get_order'")
+        sys.exit(1)
+    
 def update_repair_order(client_name: str, model: str, service: str, observations: str, cost: float, investment: float, repair_order_id: int) ->  bool:
     try:
         connection = get_connection()
@@ -188,11 +115,9 @@ def update_repair_order(client_name: str, model: str, service: str, observations
         connection.commit()
         connection.close()
 
-        return True
-
     except Exception as e:
-        print(f"Error ({e}) at modules/db_connection func 'update_repair_order'")
-        return False
+        print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'update_repair_order'")
+        sys.exit(1)
     
 def get_all_repair_orders() -> tuple:
     try:
@@ -206,7 +131,8 @@ def get_all_repair_orders() -> tuple:
 
         return convert_set(orders, 'repair_order')
     except Exception as e:
-        print(f"Error ({e}) at modules/db_connection func 'get_all_repair_orders'")
+        print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'get_all_repair_orders'")
+        sys.exit(1)
     
 def get_unfinished_repair_orders() -> tuple:
     try:
@@ -220,7 +146,8 @@ def get_unfinished_repair_orders() -> tuple:
 
         return convert_set(orders, 'repair_order')
     except Exception as e:
-        print(f"Error ({e}) at modules/db_connection func 'get_unfinished_repair_orders'")
+        print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'get_unfinished_repair_orders'")
+        sys.exit(1)
 
 def delete_repair_order(repair_order_id: int) -> bool:
     try:
@@ -232,24 +159,11 @@ def delete_repair_order(repair_order_id: int) -> bool:
         connection.commit()
         connection.close()
 
-        return True
     except Exception as e:
-        print(f"Error ({e}) at modules/db_connection func 'delete_repair_order'")
-        return False
-    
-class order_media:
-    def __init__(self, data: tuple) -> None:
-        self.media_id = data[0]
-        self.media_id = data[0]
-        self.order_id = data[1]
-        self.directory = data[2]
+        print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'delete_repair_order'")
+        sys.exit(1)
 
-    def to_dict(self) -> dict:
-        return {
-            'media_id': self.media_id,
-            'order_id': self.order_id,
-            'directory': self.directory
-        }
+# Relacionado a la entidad 'order_media'
 
 def new_order_media(order_id: int, directory: str) -> bool:
     try:
@@ -261,10 +175,9 @@ def new_order_media(order_id: int, directory: str) -> bool:
         connection.commit()
         connection.close()
 
-        return True
     except Exception as e:
-        print(f"Error ({e}) at modules/db_connection func 'new_order_media'")
-        return False
+        print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'new_order_media'")
+        sys.exit(1)
     
 def delete_order_media(media_id: int) -> bool:
     try:
@@ -287,10 +200,9 @@ def delete_order_media(media_id: int) -> bool:
         connection.commit()
         connection.close()
 
-        return True
     except Exception as e:
-        print(f"Error ({e}) at modules/db_connection func 'delete_order_media'")
-        return False
+        print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'delete_order_media'")
+        sys.exit(1)
     
 def get_order_media(repair_order_id: int) -> bool:
     try:
@@ -304,24 +216,48 @@ def get_order_media(repair_order_id: int) -> bool:
 
         return convert_set(order_photos, 'order_media')
     except Exception as e:
-        print(f"Error ({e}) at modules/db_connection func 'get_order_media'")
+        print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'get_order_media'")
+        sys.exit(1)
+
+# Relacionado a la entidad 'products'
     
-def get_user(email: str) -> str:
+def get_products() -> tuple:
     try:
         connection = get_connection()
 
         with connection.cursor() as cursor:
-            cursor.execute(f"SELECT * FROM users WHERE email = '{email}'")
-            user = cursor.fetchone()
+            cursor.execute("SELECT * FROM products")
+            products = cursor.fetchall()
 
         connection.close()
 
-        return user
+        return convert_set(products, 'product')
     except Exception as e:
-        print(f"Error ({e}) at modules/db_connection func 'get_user'")
+        print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'get_products'")
+        sys.exit(1)
 
-"""
-    Este apartado contiene funciones de prueba para generar usuarios en la base de datos,
-    en teoria no deberia ser llamada jamás en app.py, recomiendo crear otro archivo .py
-    incluir estas funciones y correrlas ahí.
-"""
+# Relacionado a la entidad 'repair_parts'
+
+def get_parts_by_name(keywords: list) -> tuple:
+    
+    try:
+        connection = get_connection()
+
+        if not keywords:
+            return ()
+
+        query = "SELECT * FROM repair_parts WHERE "
+        conditions = [f"model LIKE '%{keyword}%'" for keyword in keywords]
+        query += " AND ".join(conditions)
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            parts = cursor.fetchall()
+
+        connection.close()
+
+        return convert_set(parts, 'repair_part')
+
+    except Exception as e:
+        print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection at func get_parts_by_name")
+        sys.exit(1)

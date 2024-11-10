@@ -8,6 +8,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.utils import secure_filename
 from flask_caching import Cache
 from dotenv import load_dotenv
+from datetime import datetime
 from typing import Optional
 import user_agents
 import requests
@@ -65,7 +66,8 @@ if __name__ == '__main__':
             self.password = data[3]
             self.profile_picture = data[4]
             self.created_at = data[5]
-                
+            self.shopping_cart = []
+
     @login_manager.user_loader
     def load_user(user_id) -> Optional[User]:
         connection = get_connection()
@@ -363,29 +365,54 @@ if __name__ == '__main__':
     @app.route('/api/order-stats', methods=['GET'])
     @login_required
     def order_stats() -> dict:
-
+        current_year = datetime.now().year
+        current_month = datetime.now().month
+        
         connection = get_connection()
         cursor = connection.cursor()
 
-        cursor.execute("SELECT SUM(cost) FROM repair_orders WHERE status='Entregado'")
-        delivered_cost = cursor.fetchone()[0] or 0
-
-        cursor.execute("SELECT SUM(investment) FROM repair_orders WHERE status='Entregado'")
-        delivered_investment = cursor.fetchone()[0] or 0
-
-        profit = delivered_cost - delivered_investment
+        cursor.execute("""
+            SELECT 
+                SUM(cost), 
+                SUM(investment) 
+            FROM repair_orders 
+            WHERE status='Entregado' 
+            AND (
+                (YEAR(delivered_at) = %s AND MONTH(delivered_at) = %s)  -- Entregadas en el mes actual
+                OR 
+                (YEAR(created_at) = %s AND MONTH(created_at) = %s)    -- También contar las creadas en el mes actual
+            )
+        """, (current_year, current_month, current_year, current_month))
+        delivered_cost, delivered_investment = cursor.fetchone()
         
-        cursor.execute("SELECT SUM(cost) FROM repair_orders WHERE status='Pendiente'")
-        pending_cost = cursor.fetchone()[0] or 0
+        delivered_cost = delivered_cost or 0
+        delivered_investment = delivered_investment or 0
 
-        cursor.execute("SELECT SUM(investment) FROM repair_orders WHERE status='Pendiente'")
-        pending_investment = cursor.fetchone()[0] or 0
+        delivered_profit = delivered_cost - delivered_investment
 
-        pending_cost = pending_cost - pending_investment
+        cursor.execute("""
+            SELECT 
+                SUM(cost), 
+                SUM(investment) 
+            FROM repair_orders 
+            WHERE status='Pendiente' 
+            AND YEAR(created_at) = %s 
+            AND MONTH(created_at) = %s  -- Solo considerar las creadas en el mes actual
+        """, (current_year, current_month))
+        pending_cost, pending_investment = cursor.fetchone()
         
+        pending_cost = pending_cost or 0
+        pending_investment = pending_investment or 0
+        
+        pending_balance = pending_cost - pending_investment
+
         connection.close()
-        
-        return jsonify({'profit': profit, 'invest': delivered_investment + pending_investment, 'pending': pending_cost})
+
+        return jsonify({
+            'profit': delivered_profit,  
+            'invest': pending_investment, 
+            'pending': pending_balance
+        })
     try:
         """
         El parámetro de host en 0.0.0.0 hará que puedan ver el render de las rutas de la

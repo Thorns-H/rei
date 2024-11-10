@@ -152,3 +152,30 @@
     font-size: 0.9rem;
 }
 
+/* Estilos para los botones cuadrados en la parte superior derecha */
+.user-buttons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.square-btn {
+    width: 40px; /* Tamaño 1x1 */
+    height: 40px; /* Tamaño 1x1 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px; /* Esquinas redondeadas */
+    font-size: 20px; /* Ajustar el tamaño del icono */
+}
+
+.square-btn.mb-3 {
+    margin-bottom: 10px; /* Espaciado entre los botones */
+}
+
+.square-btn i {
+    color: white; /* Asegurarse de que el icono sea blanco */
+}

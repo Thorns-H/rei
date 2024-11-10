@@ -1,3 +1,8 @@
+"""
+    Este archivo define la lógica para mantener el cache de la phone-specs-api
+    haciendolo 2 veces al día, ademas usamos hilos para este proceso.
+"""
+
 from datetime import datetime
 
 import threading
@@ -37,7 +42,7 @@ def update_cache() -> None:
             save_brands_to_cache(brands)
         time.sleep(3600)
 
-def start_cache_updater():
+def start_cache_updater() -> None:
     cache_updater_thread = threading.Thread(target=update_cache)
     cache_updater_thread.daemon = True
     cache_updater_thread.start()
