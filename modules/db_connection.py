@@ -153,11 +153,11 @@ def validate_repair_order(repair_order_id) -> None:
     try:
         connection = get_connection()
 
-            with connection.cursor() as cursor:
-                cursor.execute("UPDATE repair_orders SET status = 'Entregado', delivered_at = NOW() WHERE repair_order_id = %s", (repair_order_id,))
+        with connection.cursor() as cursor:
+            cursor.execute("UPDATE repair_orders SET status = 'Entregado', delivered_at = NOW() WHERE repair_order_id = %s", (repair_order_id,))
 
-            connection.commit()
-            connection.close()
+        connection.commit()
+        connection.close()
     except Exception as e:
         print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'validate_repair_order'")
         sys.exit(1)
