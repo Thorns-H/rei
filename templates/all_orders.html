@@ -6,29 +6,33 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/all_orders.css') }}">
 
 <!-- Título de la página -->
-<h2 class="my-4">Todas las Ordenes</h2>
+<h2 class="my-4 text-center">Todas las Ordenes</h2>
 
 <!-- Cards para todas las órdenes existentes -->
 <div class="row">
     {% for order in orders %}
     <div class="col-md-4 mb-4">
-        <div class="card">
-            <div class="card-body">
+        <div class="card order-card h-100">
+            <div class="card-body d-flex flex-column">
                 <h5 class="card-title">{{ order['client_name'] }}</h5>
-                <p class="card-text"><strong>Referencia: {{ "{:06d}".format(order['repair_order_id']) }}</p></strong>
+                <p class="card-text text-muted"><strong>Referencia:</strong> {{ "{:06d}".format(order['repair_order_id']) }}</p>
                 <p class="card-text"><strong>Servicio:</strong> {{ order['service'] }}</p>
-                <p class="card-text"><strong>Notas:</strong> {{ order['notes'] }}</p>
-                <p class="card-text"><strong>Costo:</strong> <span style="color: green;">${{ order['cost'] }}</span></p>
-                <p class="card-text"><strong>Inversión:</strong> <span style="color: green;">${{ order['investment'] }}</span></p>
+                <p class="card-text truncate-text"><strong>Notas:</strong> {{ order['observations'] }}</p>
+                <p class="card-text"><strong>Costo:</strong> <span class="text-success">${{ order['cost'] }}</span></p>
+                <p class="card-text"><strong>Inversión:</strong> <span class="text-success">${{ order['investment'] }}</span></p>
                 <p class="card-text"><strong>Estatus:</strong> 
-                    <span style="color: {% if order['status'] == 'Pendiente' %}red{% elif order['status'] == 'Entregado' %}green{% else %}yellow{% endif %};">{{ order['status'] }}</span>
+                    <span class="status-text {% if order['status'] == 'Pendiente' %}text-danger{% elif order['status'] == 'Entregado' %}text-success{% else %}text-warning{% endif %}">
+                        {{ order['status'] }}
+                    </span>
                 </p>
-                <form action="/ordenes/editar/{{ order['repair_order_id'] }}" method="get" style="display:inline-block;">
-                    <button type="submit" class="btn btn-primary btn-sm">Editar</button>
-                </form>
-                <form action="/ordenes/eliminar/{{ order['repair_order_id'] }}" method="post" style="display:inline-block;">
-                    <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
-                </form>
+                <div class="mt-auto">
+                    <form action="/ordenes/editar/{{ order['repair_order_id'] }}" method="get" class="d-inline-block">
+                        <button type="submit" class="btn btn-primary btn-sm">Editar</button>
+                    </form>
+                    <form action="/ordenes/eliminar/{{ order['repair_order_id'] }}" method="post" class="d-inline-block">
+                        <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

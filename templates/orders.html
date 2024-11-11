@@ -7,7 +7,7 @@
 
 <!-- Contenedor principal para ambos apartados -->
 <div class="orders-container">
-    <!-- Contenedor para el formulario de creación de orden (más pequeño ahora) -->
+    <!-- Contenedor para el formulario de creación de orden -->
     <div class="order-form-container">
         <div class="card">
             <div class="card-body">
@@ -47,7 +47,8 @@
         <h3 class="section-title">Órdenes Pendientes</h3>
         <p>Si estás buscando una orden vieja y validada, encuéntrala <a href="{{ url_for('all_orders') }}">aquí.</a></p>
 
-        <div class="orders">
+        <!-- Contenedor de las órdenes con altura fija para mantener el espacio de dos órdenes -->
+        <div class="orders" id="orderCards" style="min-height: 500px;">
             {% for order in orders %}
             <div class="card mb-3 order-card">
                 <div class="card-body">
@@ -70,6 +71,14 @@
             </div>
             {% endfor %}
         </div>
+
+        <!-- Botones de paginación -->
+        <div class="pagination-controls text-center mt-3">
+            <button class="btn btn-outline-secondary" id="prevPageBtn" onclick="changePage(-1)">Anterior</button>
+            <button class="btn btn-outline-secondary" id="nextPageBtn" onclick="changePage(1)">Siguiente</button>
+        </div>
     </div>
 </div>
+
+<script src="{{ url_for('static', filename='js/orders.js') }}"></script>
 {% endblock %}

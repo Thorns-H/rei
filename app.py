@@ -18,7 +18,7 @@ import os
 from modules.db_connection import get_connection
 from modules.db_connection import get_products
 from modules.db_connection import get_parts_by_name
-from modules.db_connection import new_repair_order, update_repair_order, get_repair_order, delete_repair_order, get_all_repair_orders, get_unfinished_repair_orders
+from modules.db_connection import new_repair_order, update_repair_order, get_repair_order, validate_repair_order, delete_repair_order, get_all_repair_orders, get_unfinished_repair_orders
 from modules.db_connection import new_order_media, get_order_media, delete_order_media
 from modules.db_connection import get_user
 
@@ -211,17 +211,7 @@ if __name__ == '__main__':
     @app.route('/ordenes/validar/<int:repair_order_id>', methods=['POST'])
     @login_required
     def validate_order(repair_order_id) -> Response:
-
-        # TODO: Mover toda esta lógica a modules/db_connection.py
-
-        connection = get_connection()
-
-        with connection.cursor() as cursor:
-            cursor.execute("UPDATE repair_orders SET status = 'Entregado', delivered_at = NOW() WHERE repair_order_id = %s", (repair_order_id,))
-
-        connection.commit()
-        connection.close()
-
+        validate_repair_order(repair_order_id)
         return redirect(url_for('orders'))
 
     @app.route('/ordenes/eliminar/<int:order_id>', methods=['POST'])
