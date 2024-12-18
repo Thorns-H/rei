@@ -6,10 +6,6 @@ product information lookup, order management, and more. This project is built us
 # Showcase (Updated 18/12/2024) 
 https://github.com/user-attachments/assets/ee433e69-1cb4-42d2-a1c2-0f4fee638154
 
-## Optimal Architecture and Database Structure:
-![](https://drive.google.com/uc?export=view&id=1XKuwVBW3vOjB9iJlv1l1zWT8CDjt7CFd)
-![](https://drive.google.com/uc?export=view&id=185PqdotsheNfz3w2crXXDIYWsKEOz2Kf)
-
 ## Basic setup:
 
 * Clone this repository.
@@ -21,6 +17,10 @@ git clone https://github.com/Thorns-H/rei.git && cd rei
 CREATE DATABASE new_database;
 mysql -u username -p new_database < sql_source/database.sql
 ```
+
+## Database Diagram
+![](https://drive.google.com/uc?export=view&id=185PqdotsheNfz3w2crXXDIYWsKEOz2Kf)
+
 * You need to create a .env file with all your personal information to run the app, this is an example:
 ```
 DB_HOST = YOUR_HOST
@@ -45,17 +45,10 @@ source rei_venv/Scripts/activate.bat
 pip install -r requirements.txt
 ```
 
-Finishing this steps you can now run the `app.py` and log into the browser using `DB_HOST/5050`.
+Finishing this steps you can now run the `app.py` and log into the browser using `DB_HOST:5050`.
 
 ## API's
 * To get all the phones data: [phone-specs-api](https://github.com/azharimm/phone-specs-api).
 * To generate temporaly emails: [1secmail](https://www.1secmail.com/api/).
 
-## Preview (some screenshots can be outdated)
-![](https://drive.google.com/uc?export=view&id=1AwbvBeaCfHdeYx7lDBseJF5FZLRMy1m1)
-![](https://drive.google.com/uc?export=view&id=1gGshO7zAEBmmI5T7C2_860inx62_cipq)
-![](https://drive.google.com/uc?export=view&id=10td2nPxjk7v4zZKUxUpLUOUZG-Ndg11o)
-![](https://drive.google.com/uc?export=view&id=1TaNzcytM_TRgHZ7-pLKbQC8X7iRc5rFC)
-![](https://drive.google.com/uc?export=view&id=1U1jox2g9mb6QkK2W_6PnRfgEYYvCFVip)
-![](https://drive.google.com/uc?export=view&id=1PMhxMW0EQ2UuI1hFI0rqwgRUPrgAJPRf)
-![](https://drive.google.com/uc?export=view&id=1mUI-g8n5yoCV1I6hVS-pHVqVDLSzj0-O)
+
