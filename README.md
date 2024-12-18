@@ -3,6 +3,10 @@
 REI Web Assistant is a comprehensive web application designed to facilitate the management of a phone repair business. The application offers various features including price quotations, 
 product information lookup, order management, and more. This project is built using Flask, a lightweight web framework for Python, and leverages Bootstrap for the front-end design.
 
+## Optimal architecture and database structure:
+![](https://drive.google.com/uc?export=view&id=1XKuwVBW3vOjB9iJlv1l1zWT8CDjt7CFd)
+![](https://drive.google.com/uc?export=view&id=185PqdotsheNfz3w2crXXDIYWsKEOz2Kf)
+
 ## Basic setup:
 
 * Clone this repository.
