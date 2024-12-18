@@ -32,3 +32,22 @@ document.getElementById('search').addEventListener('input', function() {
         product.style.display = name.includes(filter) ? 'flex' : 'none';
     });
 });
+
+document.getElementById('newNoteForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevenir el envío por defecto del formulario
+    
+    const formData = new FormData(this);
+    
+    fetch('/create_note', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data.message);
+        alert('Nota creada exitosamente');
+    })
+    .catch(error => {
+        console.error('Error al enviar el formulario:', error);
+    });
+});

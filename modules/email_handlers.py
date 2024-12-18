@@ -7,5 +7,6 @@ def generate_random_string(length=6) -> str:
 
 def generate_temp_email() -> str:
     username = generate_random_string()
+    domain = "1secmail.com"
     email_address = f"{username}@{domain}"
-    return username, "1secmail.com", email_address
+    return username, domain, email_address

@@ -1,0 +1,128 @@
+
+.notes-page .header h2 {
+    font-size: 2rem;          
+    font-weight: 700;         
+    color: #333;             
+    text-align: left;       
+}
+
+.notes-page .header p {      
+    color: #333;               
+    text-align: left;        
+    margin-bottom: 30px;       
+    line-height: 1.6;         
+}
+
+.notes-page .note-card {
+    border: 1px solid #ddd;    
+    border-radius: 8px;       
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
+    background-color: #fff;     
+    padding: 20px;             
+    transition: transform 0.3s ease;
+}
+
+.notes-page .note-card:hover {
+    transform: translateY(-5px); 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.notes-page .note-card .card-title {
+    font-size: 1.8rem;          
+    font-weight: 600;          
+    color: #007bff;           
+    margin-bottom: 10px;        
+}
+
+.notes-page .note-card .card-text {
+    font-size: 1.1rem;         
+    color: #333;             
+    line-height: 1.6;        
+    margin-bottom: 15px;     
+}
+
+.notes-page .note-meta {
+    font-size: 0.9rem;         
+    color: #888;              
+    margin-top: 10px;         
+}
+
+.notes-page .note-buttons {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: 15px;          
+}
+
+.notes-page .note-buttons .btn {
+    font-size: 1rem;           
+    padding: 8px 16px;         
+    border-radius: 5px;         
+}
+
+.notes-page .note-buttons .btn-edit {
+    background-color: #ffc107; 
+    color: #fff;               
+    border: none;
+}
+
+.notes-page .note-buttons .btn-delete {
+    background-color: #dc3545;  
+    color: #fff;                
+    border: none;
+}
+
+.notes-page .note-buttons .btn:hover {
+    opacity: 0.8;            
+}
+
+@media (max-width: 768px) {
+    .notes-page .header h2 {
+        font-size: 2rem;          
+    }
+
+    .notes-page .note-card {
+        padding: 15px;           
+    }
+
+    .notes-page .note-card .card-title {
+        font-size: 1.6rem;       
+    }
+
+    .notes-page .note-card .card-text {
+        font-size: 1rem;         
+    }
+
+    .notes-page .note-buttons {
+        flex-direction: column;   
+        align-items: flex-start;
+    }
+
+    .notes-page .note-buttons .btn {
+        width: 100%;              
+        margin-bottom: 10px;     
+    }
+}
+
+.note-user-info img {
+    margin-right: 10px;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.note-user-name {
+    font-size: 0.85rem;
+    color: #333;
+}
+
+.note-meta {
+    margin-bottom: 5px;
+}
+
+.note-card {
+    padding: 15px;
+}
+
+.note-buttons {
+    margin-top: 5px;
+}

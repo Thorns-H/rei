@@ -16,6 +16,7 @@ import hashlib
 import os
 
 from modules.db_connection import get_connection
+from modules.db_connection import new_note, get_notes
 from modules.db_connection import get_products
 from modules.db_connection import get_parts_by_name
 from modules.db_connection import new_repair_order, update_repair_order, get_repair_order, validate_repair_order, delete_repair_order, get_all_repair_orders, get_unfinished_repair_orders
@@ -66,7 +67,6 @@ if __name__ == '__main__':
             self.password = data[3]
             self.profile_picture = data[4]
             self.created_at = data[5]
-            self.shopping_cart = []
 
     @login_manager.user_loader
     def load_user(user_id) -> Optional[User]:
@@ -101,6 +101,24 @@ if __name__ == '__main__':
             return render_template('index_mobile.html', user=user, products=products)
         else:
             return render_template('index.html', user=user, products=products)
+
+    @app.route('/create_note', methods=['POST'])
+    @login_required
+    def create_note():
+        title = request.form.get('title')
+        content = request.form.get('content')
+        remove_at = request.form.get('remove_at')
+        created_at = datetime.now()
+
+        new_note(current_user.id, title, content, created_at, remove_at)
+
+        return jsonify({'message': 'Nota creada exitosamente'}), 200
+
+    @app.route('/notes')
+    @login_required
+    def notes():
+        notes = get_notes()
+        return render_template('notes.html', notes = notes)
     
     @app.route('/login', methods=['GET', 'POST'])
     def login() -> Response:

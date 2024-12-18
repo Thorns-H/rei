@@ -4,6 +4,31 @@
     momento de cargar la información en los templates.
 """
 
+# La clase note, es la relacionada a la entidad 'notes'.
+
+class note:
+    def __init__(self, data: tuple) -> None:
+        self.note_id = data[0]
+        self.user_id = data[1]
+        self.title = data[2]
+        self.content = data[3]
+        self.created_at = data[4]
+        self.remove_at = data[5]
+        self.user_name = data[6]
+        self.user_profile_picture = data[7]
+
+    def to_dict(self) -> dict:
+        return {
+            'note_id': self.note_id,
+            'user_id': self.user_id,
+            'title': self.title,
+            'content': self.content,
+            'created_at': self.created_at,
+            'remove_at': self.remove_at,
+            'user_name': self.user_name,
+            'user_profile_picture': self.user_profile_picture
+        }
+
 # La clase product, es la relacionada la entidad 'products', relacionado al inventario.
 
 class product:

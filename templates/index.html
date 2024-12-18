@@ -47,20 +47,52 @@
                         <p class="user-text"><b>Email:</b> {{ user.email }}</p>
                         <p class="user-text"><b>Miembro desde:</b> {{ user.created_at.strftime('%d/%m/%Y') }}</p>
                     </div>
-                    <!-- Botones para la información del usuario -->
                     <div class="user-buttons ml-auto">
-                        <a href="#" class="btn btn-info btn-sm square-btn mb-3">
+                        <a href="#" class="btn btn-info btn-sm square-btn mb-3" data-toggle="modal" data-target="#newNoteModal">
                             <i class="fa fa-sticky-note"></i>
                         </a>
-                        <a href="#" class="btn btn-warning btn-sm square-btn">
+                        <a href="/notes" class="btn btn-warning btn-sm square-btn">
                             <i class="fa fa-list"></i>
-                        </a>
+                        </a>                                              
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <div class="modal fade" id="newNoteModal" tabindex="-1" role="dialog" aria-labelledby="newNoteModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="newNoteModalLabel">Crear una nota</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <form id="newNoteForm"  method="POST" action="/create_note">
+            <div class="modal-body">
+                <div class="form-group">
+                <label for="noteTitle">Título</label>
+                <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+                <div class="form-group">
+                <label for="noteContent">Contenido</label>
+                <textarea class="form-control" id="noteContent" name="content" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                <label for="removeAt">Fecha de Eliminación</label>
+                <input type="datetime-local" class="form-control" id="remove_at" name="remove_at" required>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                <button type="submit" class="btn btn-primary">Crear</button>
+            </div>
+            </form>
+        </div>
+        </div>
+    </div>
+  
     <hr>
 
     <div class="row mt-4">

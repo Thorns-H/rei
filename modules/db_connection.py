@@ -8,7 +8,7 @@ import os
 import sys
 from dotenv import load_dotenv
 
-from modules.db_objects import product, repair_part, repair_order, order_media
+from modules.db_objects import product, repair_part, repair_order, order_media, note
 
 RED = "\033[91m"
 YELLOW = "\033[93m"
@@ -41,12 +41,54 @@ def convert_set(table: tuple, type: str) -> tuple:
             items.append(order_media(item).to_dict())
         elif type == 'product':
             items.append(product(item).to_dict())
+        elif type == 'note':
+            items.append(note(item).to_dict())
         
     return tuple(items)
 
 # Relacionado con la entidad 'notes'
 
-# TODO
+def new_note(user_id: int, title: str, content: str, created_at: str, remove_at: str) -> None:
+    try:
+        connection = get_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute("INSERT INTO notes(user_id, title, content, created_at, remove_at) VALUES (%s, %s, %s, %s, %s)", (user_id, title, content, created_at, remove_at))
+
+        connection.commit()
+        connection.close()
+
+    except Exception as e:
+        print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'new_note'")
+        sys.exit(1)
+
+def get_notes() -> tuple:
+    try:
+        connection = get_connection()
+
+        with connection.cursor() as cursor:
+            query = """
+                SELECT 
+                    notes.note_id, 
+                    notes.user_id, 
+                    notes.title, 
+                    notes.content, 
+                    notes.created_at, 
+                    notes.remove_at, 
+                    users.name, 
+                    users.profile_picture
+                FROM notes
+                INNER JOIN users ON notes.user_id = users.user_id
+                ORDER BY notes.created_at DESC
+            """
+            cursor.execute(query)
+            notes = cursor.fetchall()
+
+        connection.close()
+        return convert_set(notes, 'note')
+    except Exception as e:
+        print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'get_notes'")
+        sys.exit(1)
 
 # Relacionado a la entidad 'users'
 
