@@ -1,3 +1,13 @@
+.card-title {
+    position: relative; /* Aseguramos el control del contenido */
+}
+
+.ref-number {
+    float: right;
+    font-weight: normal; /* Opcional para ajustar el estilo */
+    color: gray; /* Opcional para darle menos importancia */
+}
+
 /* Estilos generales */
 body {
     font-family: Arial, sans-serif;
@@ -61,6 +71,11 @@ form {
 /* Estilo para las listas de órdenes */
 .order-list-container {
     margin-top: 20px;
+}
+
+.order-status {
+    color: red;
+    font-weight: bold;
 }
 
 .order-list-container .section-title {

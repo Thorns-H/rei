@@ -59,6 +59,22 @@ if __name__ == '__main__':
     login_manager.init_app(app)
     login_manager.login_view = 'login'
 
+    def format_date_and_difference(created_at) -> str:
+        if isinstance(created_at, str):
+            try:
+                created_at = datetime.strptime(created_at, '%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                created_at = datetime.strptime(created_at, '%Y-%m-%d')
+        
+        current_date = datetime.now()
+        difference_in_days = (current_date - created_at).days
+
+        formatted_date = created_at.strftime('%Y-%m-%d')
+        
+        return f"{formatted_date} (hace {difference_in_days} días)"
+
+    app.jinja_env.filters['format_date_and_difference'] = format_date_and_difference
+
     class User(UserMixin):
         def __init__(self, data: tuple):
             self.id = data[0]
@@ -102,6 +118,12 @@ if __name__ == '__main__':
         else:
             return render_template('index.html', user=user, products=products)
 
+    @app.route('/notes')
+    @login_required
+    def notes():
+        notes = get_notes()
+        return render_template('notes.html', notes = notes)
+
     @app.route('/create_note', methods=['POST'])
     @login_required
     def create_note():
@@ -114,11 +136,11 @@ if __name__ == '__main__':
 
         return jsonify({'message': 'Nota creada exitosamente'}), 200
 
-    @app.route('/notes')
+    @app.route('/delete_note', methods=['POST'])
     @login_required
-    def notes():
-        notes = get_notes()
-        return render_template('notes.html', notes = notes)
+    def delete_note():
+        remove_note(note_id)
+        return jsonify({'message': 'Nota creada exitosamente'}), 200
     
     @app.route('/login', methods=['GET', 'POST'])
     def login() -> Response:
@@ -211,7 +233,7 @@ if __name__ == '__main__':
             observations = request.form.get('observations', '')
             cost = float(request.form.get('cost'))
             investment = float(request.form.get('investment'))
-            new_repair_order(client_name, current_user.id, model, service, observations, cost, investment)
+            new_repair_order(client_name, current_user.id, model, service, observations, '', '', cost, investment)
             return redirect(url_for('orders'))
 
         user_agent = request.headers.get('User-Agent')
@@ -266,10 +288,12 @@ if __name__ == '__main__':
             model = request.form['model']
             service = request.form['service']
             observations = request.form['observations']
+            repair_details = request.form['repair_details']
+            post_details = request.form['post_details']
             cost = request.form['cost']
             investment = request.form['investment']
 
-            update_repair_order(client_name, model, service, observations, cost, investment, repair_order_id)
+            update_repair_order(client_name, model, service, observations, repair_details, post_details, cost, investment, repair_order_id)
             
             if 'files' in request.files:
                 files = request.files.getlist('files')

@@ -1,3 +1,13 @@
+.card-title {
+    position: relative; /* Aseguramos el control del contenido */
+}
+
+.ref-number {
+    float: right;
+    font-weight: normal; /* Opcional para ajustar el estilo */
+    color: gray; /* Opcional para darle menos importancia */
+}
+
 /* Título de las secciones */
 .section-title {
     font-weight: bold;

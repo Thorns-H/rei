@@ -90,6 +90,20 @@ def get_notes() -> tuple:
         print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'get_notes'")
         sys.exit(1)
 
+def remove_note(note_id: int) -> bool:
+    try:
+        connection = get_connection()
+
+        with connection.cursor() as cursor:
+            cursor.execute("DELETE FROM notes WHERE note_id = %s", (note_id,))
+
+        connection.commit()
+        connection.close()
+
+    except Exception as e:
+        print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'remove_note'")
+        sys.exit(1)
+
 # Relacionado a la entidad 'users'
 
 def get_user(email: str) -> str:
@@ -117,12 +131,12 @@ def get_user(email: str) -> str:
 
 # Relacionado a la entidad 'repair_orders'
 
-def new_repair_order(client_name: str, user_id: str, model: str, service: str, observations: str, cost: float, investment: float) -> None:
+def new_repair_order(client_name: str, user_id: str, model: str, service: str, observations: str, repair_details: str, post_details: str, cost: float, investment: float) -> None:
     try:
         connection = get_connection()
 
         with connection.cursor() as cursor:
-            cursor.execute("INSERT INTO repair_orders(client_name, user_id, model, service, observations, cost, investment) VALUES (%s, %s, %s, %s, %s, %s, %s)", (client_name, user_id, model, service, observations, cost, investment))
+            cursor.execute("INSERT INTO repair_orders(client_name, user_id, model, service, observations, repair_details, post_details, cost, investment) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)", (client_name, user_id, model, service, observations, repair_details, post_details, cost, investment))
 
         connection.commit()
         connection.close()
@@ -147,12 +161,12 @@ def get_repair_order(order_id: int) -> tuple:
         print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'get_order'")
         sys.exit(1)
     
-def update_repair_order(client_name: str, model: str, service: str, observations: str, cost: float, investment: float, repair_order_id: int) ->  bool:
+def update_repair_order(client_name: str, model: str, service: str, observations: str, repair_details: str, post_details: str, cost: float, investment: float, repair_order_id: int) ->  bool:
     try:
         connection = get_connection()
 
         with connection.cursor() as cursor:
-            cursor.execute("UPDATE repair_orders SET client_name = %s, model = %s, service = %s, observations = %s, cost = %s, investment = %s WHERE repair_order_id = %s", (client_name, model, service, observations, cost, investment, repair_order_id))
+            cursor.execute("UPDATE repair_orders SET client_name = %s, model = %s, service = %s, observations = %s, repair_details = %s, post_details = %s, cost = %s, investment = %s WHERE repair_order_id = %s", (client_name, model, service, observations, repair_details, post_details, cost, investment, repair_order_id))
 
         connection.commit()
         connection.close()

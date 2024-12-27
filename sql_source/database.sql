@@ -38,18 +38,18 @@ CREATE TABLE repair_parts (
 CREATE TABLE repair_orders (
     repair_order_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id INT UNSIGNED NOT NULL,
-    repair_part_id INT UNSIGNED DEFAULT NULL,
     client_name VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     delivered_at TIMESTAMP DEFAULT NULL,
     model VARCHAR(255) NOT NULL,
     service VARCHAR(255) NOT NULL,
     observations TEXT,
+    repair_details TEXT,
+    post_details TEXT,
     cost FLOAT(10,2) NOT NULL,
     investment FLOAT(10,2) NOT NULL DEFAULT 0.0,
-    status ENUM('Cancelado', 'Pendiente', 'Entregado') NOT NULL DEFAULT 'Pendiente',
-    FOREIGN KEY (user_id) REFERENCES users(user_id),
-    FOREIGN KEY (repair_part_id) REFERENCES repair_parts(repair_part_id)
+    status ENUM('Pendiente', 'Entregado') NOT NULL DEFAULT 'Pendiente',
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 
 CREATE TABLE sale_orders (

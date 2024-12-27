@@ -77,16 +77,17 @@ class repair_order:
     def __init__(self, data: tuple = None) -> None:
         self.repair_order_id = data[0]
         self.user_id = data[1]
-        self.repair_part_id = data[2]
-        self.client_name = data[3]
-        self.created_at = data[4]
-        self.delivered_at = data[5]
-        self.model = data[6]
-        self.service = data[7]
-        self.observations = data[8]
-        self.cost = data[9]
-        self.investment = data[10]
-        self.status = data[11]
+        self.client_name = data[2]
+        self.created_at = data[3]
+        self.delivered_at = data[4]
+        self.model = data[5]
+        self.service = data[6]
+        self.observations = data[7]
+        self.repair_details = data[8]
+        self.post_details = data[9]
+        self.cost = data[10]
+        self.investment = data[11]
+        self.status = data[12]
 
     def to_dict(self) -> dict:
         return {
@@ -98,6 +99,8 @@ class repair_order:
             'model': self.model,
             'service': self.service,
             'observations': self.observations,
+            'repair_details': self.repair_details,
+            'post_details': self.post_details,
             'cost': self.cost,
             'investment': self.investment,
             'status': self.status

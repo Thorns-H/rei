@@ -29,11 +29,12 @@
                 <textarea class="form-control" id="observations" name="observations">{{ order['observations'] }}</textarea>
             </div>
             <div class="form-group">
-                <label for="refaccion">Refacción</label>
-                <select class="form-control" id="refaccion" name="refaccion">
-                    <option value="">Seleccione una opción</option>
-                    <option value="part">Refacción 1</option>
-                </select>
+                <label for="observations">Detalles Reparación</label>
+                <textarea class="form-control" id="repair_details" name="repair_details">{{ order['repair_details'] }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="observations">Detalles Post-Reparación</label>
+                <textarea class="form-control" id="post_details" name="post_details">{{ order['post_details'] }}</textarea>
             </div>
             <div class="form-group">
                 <label for="cost">Costo</label>

@@ -51,10 +51,20 @@
             {% for order in orders %}
             <div class="card mb-3 order-card">
                 <div class="card-body">
-                    <h5 class="card-title">{{ order['client_name'] }}</h5>
+                    <h5 class="card-title">{{ order['client_name'] }} 
+                        <span class="ref-number">
+                            {{ "{:06d}".format(order['repair_order_id']) }}
+                        </span>
+                    </h5>
                     <p class="card-text"><strong>Modelo:</strong> {{ order['model'] }}</p>
                     <p class="card-text"><strong>Servicio:</strong> {{ order['service'] }}</p>
-                    <p class="card-text"><strong>Estatus:</strong> <span class="order-status">{{ order['status'] }}</span></p>
+                    <p class="card-text"><strong>Estatus:</strong> 
+                        <span class="order-status">{{ order['status'] }}</span> 
+                        desde 
+                        <span class="order-status">
+                            {{ order['created_at']|format_date_and_difference }}
+                        </span>
+                    </p>                    
                     <div class="order-actions">
                         <form action="/ordenes/validar/{{ order['repair_order_id'] }}" method="post">
                             <button type="submit" class="btn btn-success btn-sm">Validar</button>
