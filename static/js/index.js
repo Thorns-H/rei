@@ -51,3 +51,28 @@ document.getElementById('newNoteForm').addEventListener('submit', function(e) {
         console.error('Error al enviar el formulario:', error);
     });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleBlurBtn = document.getElementById('toggleBlurBtn');
+    const moneyTexts = document.querySelectorAll('.blur-text');
+    const eyeIcon = toggleBlurBtn.querySelector('i');
+
+    let isBlurred = true;
+
+    toggleBlurBtn.addEventListener('click', () => {
+        moneyTexts.forEach((text) => {
+            text.classList.toggle('blur-text');
+        });
+
+        if (isBlurred) {
+            eyeIcon.classList.remove('fa-eye');
+            eyeIcon.classList.add('fa-eye-slash');
+        } else {
+            eyeIcon.classList.remove('fa-eye-slash');
+            eyeIcon.classList.add('fa-eye');
+        }
+
+        isBlurred = !isBlurred;
+    });
+});
+

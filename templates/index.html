@@ -7,58 +7,62 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
 
 <div class="container-fluid">
+    
     <div class="row">
         <div class="col-md-4 mb-4">
             <div class="card h-100 card-gradient card-bg-green">
                 <div class="card-body">
                     <h3 class="card-color-title">Ganancias</h3>
-                    <p class="card-text money-text" id="profitAmount">$0.00</p>
+                    <p class="card-text money-text blur-text" id="profitAmount">$0.00</p>
                 </div>
             </div>
         </div>
-
+    
         <div class="col-md-4 mb-4">
             <div class="card h-100 card-gradient card-bg-red">
                 <div class="card-body">
                     <h3 class="card-color-title">Pendientes</h3>
-                    <p class="card-text money-text" id="pendingAmount">$0.00</p>
+                    <p class="card-text money-text blur-text" id="pendingAmount">$0.00</p>
                 </div>
             </div>
         </div>
-
+    
         <div class="col-md-4 mb-4">
             <div class="card h-100 card-gradient card-bg-yellow">
                 <div class="card-body">
                     <h3 class="card-color-title">Inversión</h3>
-                    <p class="card-text money-text" id="investAmount">$0.00</p>
+                    <p class="card-text money-text blur-text" id="investAmount">$0.00</p>
                 </div>
             </div>
         </div>
     </div>
-
+    
     <div class="row mt-4">
         <div class="col-12">
             <div class="card h-100 user-card">
                 <div class="card-body d-flex align-items-center">
                     <img src="{{ url_for('static', filename='images/' + user.profile_picture) }}" alt="Profile Picture" class="rounded-circle profile-picture">
                     <div class="user-info">
-                        <h3 class="user-name">{{ user.name }}</h3>
+                        <h3 class="user-name blur-text">{{ user.name }}</h3>
                         <p class="user-text"><b>ID:</b> USR-{{ "%05d"|format(user.id) }}</p>
-                        <p class="user-text"><b>Email:</b> {{ user.email }}</p>
+                        <p class="user-text blur-text"><b>Email:</b> {{ user.email }}</p>
                         <p class="user-text"><b>Miembro desde:</b> {{ user.created_at.strftime('%d/%m/%Y') }}</p>
                     </div>
                     <div class="user-buttons ml-auto">
-                        <a href="#" class="btn btn-info btn-sm square-btn mb-3" data-toggle="modal" data-target="#newNoteModal">
+                        <a href="#" class="btn btn-info btn-sm square-btn mb-2" data-toggle="modal" data-target="#newNoteModal">
                             <i class="fa fa-sticky-note"></i>
                         </a>
-                        <a href="/notes" class="btn btn-warning btn-sm square-btn">
+                        <a href="/notes" class="btn btn-warning btn-sm square-btn mb-2">
                             <i class="fa fa-list"></i>
-                        </a>                                              
+                        </a>
+                        <button id="toggleBlurBtn" class="btn btn-outline-secondary btn-circle">
+                            <i class="fa fa-eye"></i>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </div>    
 
     <div class="modal fade" id="newNoteModal" tabindex="-1" role="dialog" aria-labelledby="newNoteModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">

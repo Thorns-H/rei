@@ -20,6 +20,39 @@
     background: linear-gradient(135deg, #ffd60a, #ffc107);
 }
 
+.blur-text {
+    filter: blur(5px);
+    cursor: not-allowed;
+}
+
+.btn-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    padding: 0;
+    margin: 0 auto;
+}
+
+.btn-circle:hover {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.btn-outline-secondary {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    background: transparent;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
 .money-text {
     font-size: 2.5rem;
     font-weight: bold;

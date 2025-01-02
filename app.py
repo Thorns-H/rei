@@ -247,7 +247,6 @@ if __name__ == '__main__':
         else:
             return render_template('orders.html', orders=orders)
 
-    
     @app.route('/ordenes/validar/<int:repair_order_id>', methods=['POST'])
     @login_required
     def validate_order(repair_order_id) -> Response:
