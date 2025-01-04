@@ -218,17 +218,32 @@ def validate_repair_order(repair_order_id) -> None:
         print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'validate_repair_order'")
         sys.exit(1)
 
+import os
+
 def delete_repair_order(repair_order_id: int) -> bool:
     try:
         connection = get_connection()
 
         with connection.cursor() as cursor:
+            cursor.execute("SELECT directory FROM order_media WHERE repair_order_id = %s", (repair_order_id,))
+            photos = cursor.fetchall()
+
+            for photo in photos:
+                file_path = os.path.join('static', photo[0])
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                    print(f"Archivo eliminado: {file_path}")
+                else:
+                    print(f"{YELLOW}Advertencia:{RESET} No se encontró el archivo {file_path}")
+
+            cursor.execute("DELETE FROM order_media WHERE repair_order_id = %s", (repair_order_id,))
             cursor.execute("DELETE FROM repair_orders WHERE repair_order_id = %s", (repair_order_id,))
 
         connection.commit()
         connection.close()
 
     except Exception as e:
+        # Manejar errores y mostrar mensaje de error
         print(f"{RED}Error:{RESET} {YELLOW}'{e}'{RESET} at modules/db_connection func 'delete_repair_order'")
         sys.exit(1)
 
