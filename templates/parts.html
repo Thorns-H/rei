@@ -26,6 +26,8 @@
                 <img src="{{ url_for('static', filename='images/kbka_shop_logo.jpg') }}" alt="KBKA_SHOP logo">
                 {% elif part['supplier'] == "HONG_KONG" %}
                 <img src="{{ url_for('static', filename='images/hong_kong_logo.jpg') }}" alt="HONG_KONG logo">
+                {% elif part['supplier'] == "I_PLUS" %}
+                <img src="{{ url_for('static', filename='images/i_plus_logo.png') }}" alt="I_PLUS logo">
                 {% else %}
                 <img src="{{ url_for('static', filename='images/supplier_default.jpg') }}" alt="Default logo">
                 {% endif %}
