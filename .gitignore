@@ -1,5 +1,6 @@
 .env
 __pycache__
+reivenv/
 displays/
 scripts/
 static/order_photos/
