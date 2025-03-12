@@ -3,7 +3,7 @@
     en este apartado, recomiendo usar .env en todo momento.
 """
 
-from flask import Flask, render_template, request, redirect, url_for, jsonify, Response
+from flask import Flask, render_template, request, redirect, url_for, jsonify, Response, flash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.utils import secure_filename
 from flask_caching import Cache
@@ -14,6 +14,7 @@ import user_agents
 import requests
 import hashlib
 import os
+import subprocess
 
 from modules.db_connection import get_connection
 from modules.db_connection import new_note, get_notes
@@ -117,6 +118,38 @@ if __name__ == '__main__':
             return render_template('index_mobile.html', user=user, products=products)
         else:
             return render_template('index.html', user=user, products=products)
+
+    @app.route('/user_dashboard')
+    @login_required
+    def user_dashboard() -> Response:
+
+        user = current_user
+        user_agent = request.headers.get('User-Agent')
+        ua = user_agents.parse(user_agent)
+
+        if ua.is_mobile:
+            return render_template('user_dashboard_mobile.html', user=user)
+        else:
+            return render_template('user_dashboard.html', user=user)
+
+    @app.route("/update_repo", methods=["GET", "POST"])
+    @login_required
+    def update_repo():
+        if request.method == 'POST':
+            try:
+                result = subprocess.run(["git", "pull"], cwd=os.getcwd(), capture_output = True, text = True)
+
+                if "Already up to date." in result.stdout:
+                    flash("El repositorio ya está actualizado.", "info")
+                else:
+                    flash("Repositorio actualizado con éxito.", "success")
+                
+            except Exception as e:
+                flash(f"Error al actualizar: {str(e)}", "danger")
+
+            return redirect(url_for("update_repo"))
+        else:
+            return redirect(url_for("user_dashboard"))
 
     @app.route('/notes')
     @login_required
@@ -396,53 +429,75 @@ if __name__ == '__main__':
     @app.route('/api/order-stats', methods=['GET'])
     @login_required
     def order_stats() -> dict:
-        current_year = datetime.now().year
-        current_month = datetime.now().month
+        start_date = request.args.get('startDate')
+        end_date = request.args.get('endDate')
         
+        # Si no se proporciona un rango de fechas, se usa el mes actual
+        if not start_date or not end_date:
+            current_year = datetime.now().year
+            current_month = datetime.now().month
+            start_date = datetime(current_year, current_month, 1).strftime('%Y-%m-%d')
+            end_date = datetime(current_year, current_month, 28).strftime('%Y-%m-%d')  # Para asegurar que el mes se termine en 28
+
         connection = get_connection()
         cursor = connection.cursor()
 
+        # Filtrado de datos por rango de fechas
         cursor.execute("""
             SELECT 
-                SUM(cost), 
-                SUM(investment) 
+                cost, 
+                investment, 
+                delivered_at 
             FROM repair_orders 
             WHERE status='Entregado' 
-            AND (
-                (YEAR(delivered_at) = %s AND MONTH(delivered_at) = %s)  -- Entregadas en el mes actual
-                OR 
-                (YEAR(created_at) = %s AND MONTH(created_at) = %s)    -- También contar las creadas en el mes actual
-            )
-        """, (current_year, current_month, current_year, current_month))
-        delivered_cost, delivered_investment = cursor.fetchone()
+            AND delivered_at BETWEEN %s AND %s
+        """, (start_date, end_date))
         
-        delivered_cost = delivered_cost or 0
-        delivered_investment = delivered_investment or 0
-
-        delivered_profit = delivered_cost - delivered_investment
+        delivered_records = cursor.fetchall()
+        delivered_data = [
+            {
+                'cost': record[0],
+                'investment': record[1],
+                'date': record[2].strftime('%Y-%m-%d %H:%M:%S')
+            } for record in delivered_records
+        ]
 
         cursor.execute("""
             SELECT 
-                SUM(cost), 
-                SUM(investment) 
+                cost, 
+                investment, 
+                created_at 
             FROM repair_orders 
             WHERE status='Pendiente' 
-            AND YEAR(created_at) = %s 
-            AND MONTH(created_at) = %s  -- Solo considerar las creadas en el mes actual
-        """, (current_year, current_month))
-        pending_cost, pending_investment = cursor.fetchone()
+            AND created_at BETWEEN %s AND %s
+        """, (start_date, end_date))
         
-        pending_cost = pending_cost or 0
-        pending_investment = pending_investment or 0
+        pending_records = cursor.fetchall()
+        pending_data = [
+            {
+                'cost': record[0],
+                'investment': record[1],
+                'date': record[2].strftime('%Y-%m-%d %H:%M:%S')
+            } for record in pending_records
+        ]
         
+        # Calculamos las sumas de cost y investment
+        delivered_cost = sum(record['cost'] for record in delivered_data)
+        delivered_investment = sum(record['investment'] for record in delivered_data)
+        delivered_profit = delivered_cost - delivered_investment
+
+        pending_cost = sum(record['cost'] for record in pending_data)
+        pending_investment = sum(record['investment'] for record in pending_data)
         pending_balance = pending_cost - pending_investment
 
         connection.close()
 
         return jsonify({
-            'profit': delivered_profit,  
-            'invest': pending_investment, 
-            'pending': pending_balance
+            'profit': delivered_profit,
+            'invest': pending_investment,
+            'pending': pending_balance,
+            'deliveredRecords': delivered_data,
+            'pendingRecords': pending_data
         })
     try:
         """

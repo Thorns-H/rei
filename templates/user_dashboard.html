@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+
+<div class="container-fluid">
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card h-100 user-card">
+                <div class="card-body d-flex align-items-center">
+                    <img src="{{ url_for('static', filename='images/' + user.profile_picture) }}" alt="Profile Picture" class="rounded-circle profile-picture">
+                    <div class="user-info">
+                        <h3 class="user-name">{{ user.name }}</h3>
+                        <p class="user-text"><b>ID:</b> USR-{{ "%05d"|format(user.id) }}</p>
+                        <p class="user-text"><b>Email:</b> {{ user.email }}</p>
+                        <p class="user-text"><b>Miembro desde:</b> {{ user.created_at.strftime('%d/%m/%Y') }}</p>
+                    </div>
+                    <div class="user-buttons ml-auto">
+                        <a href="#" class="btn btn-primary btn-sm square-btn">
+                            <i class="fa fa-edit"></i>
+                        </a>
+                        <form action="{{ url_for('update_repo') }}" method="POST" style="display: inline;">
+                            <button type="submit" class="btn btn-secondary btn-sm square-btn mt-2">
+                                <i class="fa fa-sync"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+{% endblock %}

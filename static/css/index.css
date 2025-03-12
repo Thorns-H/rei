@@ -212,3 +212,60 @@
 .square-btn i {
     color: white; /* Asegurarse de que el icono sea blanco */
 }
+
+/* Botón rectangular para notas */
+.rectangular-btn {
+    width: auto; /* Ajuste automático según el contenido */
+    padding: 10px 20px; /* Relleno mayor para el botón rectangular */
+    border-radius: 25px; /* Bordes redondeados */
+    font-size: 1.1rem; /* Tamaño adecuado */
+}
+
+/* Estilos del botón del ojo en la esquina superior derecha */
+.float-right {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 999;
+}
+
+.btn-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    padding: 0;
+    margin: 0 auto;
+}
+
+.btn-circle:hover {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.btn-outline-secondary {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    background: transparent;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Estilos del botón del ojo en la esquina superior derecha */
+#toggleBlurBtn {
+    position: absolute;
+    top: 60px; /* Aumenta el valor para que quede más abajo */
+    right: 15px;
+    z-index: 999;
+}
+
+/* Aseguramos que el botón del ojo se alinee con las tarjetas */
+.card {
+    position: relative;
+}

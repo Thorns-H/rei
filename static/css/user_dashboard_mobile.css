@@ -1,0 +1,218 @@
+.card-gradient {
+    border-radius: 10px;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card-gradient:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.card-bg-green {
+    background: linear-gradient(135deg, #34c759, #28a745);
+}
+
+.card-bg-red {
+    background: linear-gradient(135deg, #ff3b30, #dc3545);
+}
+
+.card-bg-yellow {
+    background: linear-gradient(135deg, #ffd60a, #ffc107);
+}
+
+.blur-text {
+    filter: blur(5px);
+    cursor: not-allowed;
+}
+
+.btn-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    padding: 0;
+    margin: 0 auto;
+}
+
+.btn-circle:hover {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.btn-outline-secondary {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    background: transparent;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+.money-text {
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.3),
+                -1px -1px 0px rgba(0, 0, 0, 0.3),
+                -1px 1px 0px rgba(0, 0, 0, 0.3),
+                1px -1px 0px rgba(0, 0, 0, 0.3);
+}
+
+.card-color-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.3),
+                -1px -1px 0px rgba(0, 0, 0, 0.3),
+                -1px 1px 0px rgba(0, 0, 0, 0.3),
+                1px -1px 0px rgba(0, 0, 0, 0.3);
+}
+
+.product-card {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.product-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+#productContainer {
+    display: none;
+}
+
+.user-card {
+    background: linear-gradient(135deg, #f0f4f7, #d9e2ec); /* Degradado suave */
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.user-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* Imagen de perfil más grande en dispositivos móviles */
+.profile-picture {
+    width: 140px;
+    height: 140px;
+    margin-right: 20px;
+    object-fit: cover;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    border: 3px solid #fff;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-size: 2rem;  /* Tamaño de la fuente aumentado */
+    font-weight: bold; /* Negrita */
+    color: #333; /* Color de texto oscuro */
+    text-align: center; /* Centrado del texto */
+}
+
+/* Formato de los datos */
+.user-text {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 5px;
+    line-height: 1.5;
+}
+
+/* Mejor presentación de la información */
+.user-card .user-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.user-card .user-buttons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+/* Botones más grandes en pantallas pequeñas */
+.user-buttons .btn {
+    font-size: 1.1rem;
+    padding: 10px 15px;
+    margin: 5px;
+}
+
+/* Botones cuadrados */
+.square-btn {
+    width: 100%;
+    height: 45px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    font-size: 1.3rem; /* Ajustar tamaño de icono */
+}
+
+.square-btn.mb-3 {
+    margin-bottom: 10px;
+}
+
+/* Responsividad: en pantallas pequeñas, el contenido se alinea en columna */
+@media (max-width: 767px) {
+    .user-card {
+        padding: 15px;
+    }
+
+    .user-info {
+        margin-top: 15px;
+    }
+
+    .profile-picture {
+        width: 100px;
+        height: 100px;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    .user-name {
+        font-size: 1.4rem;
+    }
+
+    .user-text {
+        font-size: 0.85rem;
+    }
+
+    .user-buttons {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .square-btn {
+        width: 100%;
+        height: 40px;
+        font-size: 1.1rem;
+    }
+
+    .btn {
+        font-size: 1rem;
+        padding: 8px 12px;
+    }
+}
