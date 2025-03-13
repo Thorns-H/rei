@@ -15,6 +15,7 @@ import requests
 import hashlib
 import os
 import subprocess
+from datetime import datetime
 
 from modules.db_connection import get_connection
 from modules.db_connection import new_note, get_notes
@@ -150,6 +151,46 @@ if __name__ == '__main__':
             return redirect(url_for("update_repo"))
         else:
             return redirect(url_for("user_dashboard"))
+
+    @app.route("/backup_db", methods=["GET", "POST"])
+    @login_required
+    def backup_db():
+        try:
+            load_dotenv(override=True)
+
+            db_host = os.getenv("DB_HOST")
+            db_user = os.getenv("DB_USER")
+            db_password = os.getenv("DB_PASSWORD")
+            db_name = os.getenv("DB_NAME")
+            db_port = os.getenv("DB_PORT")
+
+            backup_dir = os.path.join(os.getcwd(), "sql_source")
+            os.makedirs(backup_dir, exist_ok=True) 
+
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            backup_file = os.path.join(backup_dir, f"{db_name}_backup_{timestamp}.sql")
+
+            dump_command = [
+                "mysqldump",
+                "-h", db_host,
+                "-P", str(db_port),
+                "-u", db_user,
+                f"--password={db_password}",
+                "--databases", db_name,
+                "--routines",
+                "--events",
+                "--single-transaction",
+                "--quick",
+                "--compact"
+            ]
+
+            with open(backup_file, "w") as f:
+                subprocess.run(dump_command, stdout=f, check=True)
+
+            return redirect(url_for("user_dashboard"))
+            
+        except Exception as e:
+            return str(e)
 
     @app.route('/notes')
     @login_required

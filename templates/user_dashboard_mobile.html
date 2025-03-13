@@ -38,6 +38,13 @@
                                     </button>
                                 </form>
                             </div>
+                            <div class="col-12">
+                                <form action="{{ url_for('backup_db') }}" method="POST" style="display: inline;">
+                                    <button type="submit" class="btn btn-warning btn-sm square-btn mt-2">
+                                        <i class="fa fa-database"></i> Respaldo
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
