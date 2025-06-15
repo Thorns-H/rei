@@ -10,6 +10,7 @@ from flask_caching import Cache
 from dotenv import load_dotenv
 from datetime import datetime
 from typing import Optional
+import threading
 import user_agents
 import requests
 import hashlib
@@ -24,6 +25,7 @@ from modules.db_connection import get_parts_by_name
 from modules.db_connection import new_repair_order, update_repair_order, get_repair_order, validate_repair_order, delete_repair_order, get_all_repair_orders, get_unfinished_repair_orders
 from modules.db_connection import new_order_media, get_order_media, delete_order_media
 from modules.db_connection import get_user
+from modules.backup_implementation import auto_backup_thread, perform_backup
 
 from modules.email_handlers import generate_temp_email
 
@@ -553,6 +555,7 @@ if __name__ == '__main__':
         Si quieren cambiar el protocolo de https a http, solo quiten ssl_context como parámetro.
         """
         start_cache_updater()
+        threading.Thread(target=auto_backup_thread, daemon=True).start()
         app.run(host = '0.0.0.0', port = 5050, debug = True)
     except KeyboardInterrupt:
         exit()
