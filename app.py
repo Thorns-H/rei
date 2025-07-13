@@ -33,6 +33,13 @@ from modules.image_handlers import allowed_file, compress_image
 
 from modules.cache_implementation import start_cache_updater, load_brands_from_cache, save_brands_to_cache, fetch_brands_from_api
 
+import re
+from gensim.models import Word2Vec
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+import csv
+import io
+
 if __name__ == '__main__':
 
     # Encargado de cargar las variables establecidas en el .env
@@ -62,6 +69,111 @@ if __name__ == '__main__':
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = 'login'
+
+    # Uploaden file sql
+    def daten_uploaden_sql(sql_path):
+        with open(sql_path, "r", encoding="utf-8") as file:
+            sql_data = file.read()
+
+        insert_blocks = re.findall(
+            r"INSERT INTO `repair_orders` VALUES\s*(.*?);", sql_data, re.DOTALL
+        )
+
+        entries = []
+
+        for block in insert_blocks:
+            filas = re.findall(r"\((.*?)\)", block, re.DOTALL)
+            for fila in filas:
+                reader = csv.reader(io.StringIO(fila), skipinitialspace=True)
+                for fields in reader:
+                    try:
+                        repair_order_id = fields[0].strip()
+                        obs = fields[7].strip().strip("'").replace("\\'", "'")
+                        post = fields[9].strip().strip("'").replace("\\'", "'")
+
+                        if all([
+                            obs.lower() not in ["", "null", "ninguna"],
+                            post.lower() not in ["", "null", "ninguna"]
+                        ]):
+                            entries.append({
+                                "repair_order_id": repair_order_id,
+                                "observations": obs,
+                                "post_details": post
+                            })
+                    except Exception as e:
+                        print("Error processing row:", e)
+                        continue
+
+        print(f"Valid entries found: {len(entries)}")
+        for i, e in enumerate(entries[:3]):
+            print(f"{i+1}. ID: {e['repair_order_id']} - Obs: {e['observations']} - Post: {e['post_details']}")
+
+        if len(entries) < 3:
+            raise ValueError("Not enough valid observations.")
+        return entries
+
+    # train the model whith the entries
+    def train_word2vec(entries):
+        corpus = [e["observations"].lower().split() for e in entries if e["observations"].strip()]
+        if not corpus:
+            raise ValueError("There are no valid observations to train the model.")
+        model = Word2Vec(vector_size=50, window=3, min_count=1, sg=1)
+        model.build_vocab(corpus)
+        model.train(corpus, total_examples=len(corpus), epochs=100)
+        return model
+    
+    # vectorize the text using the trained word2vec model.
+    def vectorize(text, model):
+        words = text.lower().split()
+        vectors = [model.wv[w] for w in words if w in model.wv]
+        return np.mean(vectors, axis=0) if vectors else np.zeros(model.vector_size)
+
+    # Load repair order data from the SQL file.
+
+    """
+    @app.route("/", methods=["GET", "POST"])
+    def index():
+        return render_template("formulario.html")
+    """
+
+    # Ruta para procesar el formulario y mostrar los resultados de las ordenes de reparación.
+    """
+    @app.route("/resultados", methods=["POST"])
+    """
+    def resultados():
+
+        #obsertvation input
+        input = request.form["observacion"]
+
+        #uploaden file sql
+        entries = daten_uploaden_sql("rei_new_backup.sql")
+
+        #train the model whith the entries
+        model = train_word2vec(entries)
+
+        #converts text to a numeric vector
+        input_vec = vectorize(input, model)
+
+        #calculate cosine similarity in -1 and 1 where 1 is maximum similarity
+        similar = []
+        for entry in entries:
+            vec = vectorize(entry["observations"], model)
+            score = cosine_similarity([input_vec], [vec])[0][0]
+            similar.append((score, entry))
+
+        #choose the top 3 most similar entries
+        best = sorted(similar, key=lambda x: x[0], reverse=True)[:3]
+
+        #prepare the results for rendering
+        results = [{
+            "id": e["repair_order_id"],
+            "observations": e["observations"],
+            "post_details": e["post_details"],
+            "score": round(score, 2)
+        } for score, e in best]
+
+        #shows the page with the results and the entry
+        return render_template("predicciones.html", resultados=results, entrada=input)
 
     def format_date_and_difference(created_at) -> str:
         if isinstance(created_at, str):
