@@ -8,6 +8,14 @@
 <!-- Título de la página -->
 <h2 class="my-4 text-center">Todas las Ordenes</h2>
 
+<!-- Buscador -->
+<div class="mb-4 text-center">
+    <form method="get" action="{{ url_for('all_orders') }}" class="d-flex justify-content-center">
+        <input type="text" name="q" class="form-control w-50" placeholder="Buscar orden..." value="{{ query }}">
+        <button type="submit" class="btn btn-primary ms-2">Buscar</button>
+    </form>
+</div>
+
 <!-- Cards para todas las órdenes existentes -->
 <div class="row">
     {% for order in orders %}

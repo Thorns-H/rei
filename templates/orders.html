@@ -36,6 +36,10 @@
                         <label for="investment">Inversión Refacción</label>
                         <input type="number" class="form-control" id="investment" name="investment" step="0.01" value="0.0" required>
                     </div>
+                    <button type="button" class="btn btn-warning mb-2"
+                        onclick="window.open('/diagnosticar?observacion=' + encodeURIComponent(document.getElementById('observations').value), '_blank')">
+                        Diagnosticar con IA
+                    </button>
                     <button type="submit" class="btn btn-primary">Crear Orden</button>
                 </form>
             </div>
