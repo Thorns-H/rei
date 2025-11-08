@@ -8,6 +8,12 @@
 
 <div class="container-fluid">
     
+<div class="clearfix">
+        <button id="toggleBlurBtn" class="btn btn-outline-secondary btn-circle float-right mt-3 mr-3" title="Mostrar/Ocultar detalles">
+            <i class="fa fa-eye"></i>
+        </button>
+    </div>
+    
     <div class="row">
         <div class="col-md-4 mb-4">
             <div class="card h-100 card-gradient card-bg-green">
@@ -41,7 +47,10 @@
     <div class="row mt-4">
         <div class="col-12">
             <div class="d-flex justify-content-center align-items-center">
-                <a href="#" class="btn btn-info btn-sm rectangular-btn mb-2" data-toggle="modal" data-target="#newNoteModal" title="Crear nueva nota">
+                <a href="#" class="btn btn-success btn-sm rectangular-btn mb-2" data-bs-toggle="modal" data-bs-target="#newProductModal" title="Agregar nuevo producto">
+                    <i class="fa fa-plus"></i> Agregar Producto
+                </a>                
+                <a href="#" class="btn btn-info btn-sm rectangular-btn mb-2 ml-3" data-toggle="modal" data-target="#newNoteModal" title="Crear nueva nota">
                     <i class="fa fa-sticky-note"></i> Nueva Nota
                 </a>
                 <a href="/notes" class="btn btn-warning btn-sm rectangular-btn mb-2 ml-3" title="Ver notas">
@@ -84,11 +93,6 @@
         </div>
     </div>
 
-    <!-- Botón para toggle el blur -->
-    <button id="toggleBlurBtn" class="btn btn-outline-secondary btn-circle float-right mt-3 mr-3" title="Mostrar/Ocultar detalles">
-        <i class="fa fa-eye"></i>
-    </button>
-
     <!-- Modal para crear una nueva nota -->
     <div class="modal fade" id="newNoteModal" tabindex="-1" role="dialog" aria-labelledby="newNoteModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -123,19 +127,17 @@
         </div>
     </div>
 
-    <hr>
+    <div class="row">
+        <div class="col-md-12">
+            <h3 class="text-center my-4">Inventario de Productos</h3>
+            
+            <div class="input-group mb-3">
+                <input type="text" id="product-search-input" class="form-control" placeholder="Buscar productos..." onkeyup="filterProducts()">
+            </div>
 
-    <div class="row mt-4">
-        <div class="col-12">
-            <input type="text" id="search" class="form-control" placeholder="Buscar productos...">
-        </div>
-    </div>
-    
-    <div class="row mt-4">
-        <div class="col-12">
-            <div id="productContainer" class="product-list">
+            <div class="product-list-container" id="product-list">
                 {% for product in products %}
-                <div class="product-list-item">
+                <div class="product-list-item mb-3">
                     <div class="product-image-container">
                         <img src="{{ url_for('static', filename='images/' + product['image']) }}" alt="{{ product['name'] }}" class="product-list-image">
                     </div>
@@ -145,26 +147,258 @@
                         <p class="product-info"><b>Precio:</b> ${{ product['price'] }}</p>
                         <p class="product-info"><b>Stock:</b> {{ product['stock'] }}</p>
                     </div>
-                    <div class="product-action">
-                        <button class="btn btn-primary">Crear Orden</button>
+                    
+<div class="product-action">
+
+                        {% if product.stock > 0 %}
+                            <a href="{{ url_for('sell_product_route', product_id=product.product_id) }}" 
+                               class="btn btn-success btn-sm rectangular-btn"
+                               onclick="return confirm('¿Confirmar venta de 1 unidad de {{ product.name }}?')">
+                               <i class="fa fa-shopping-cart"></i> Vender
+                            </a>
+                        {% else %}
+                            <button type="button" class="btn btn-secondary btn-sm rectangular-btn" disabled>
+                                <i class="fa fa-times-circle"></i> Agotado
+                            </button>
+                        {% endif %}
+
+                        <button type="button" class="btn btn-warning btn-sm rectangular-btn ml-2"
+                            data-bs-toggle="modal" 
+                            data-bs-target="#editProductModal"
+                            data-product-id="{{ product.product_id }}"
+                            data-product-name="{{ product.name }}"
+                            data-product-category="{{ product.category }}"
+                            data-product-description="{{ product.description | replace('"', '&quot;') }}"
+                            data-product-price="{{ product.price }}"
+                            data-product-stock="{{ product.stock }}">
+                            <i class="fa fa-edit"></i> Editar
+                        </button>
+                        
+                        <a href="{{ url_for('delete_product_route', product_id=product.product_id) }}" 
+                           class="btn btn-danger btn-sm rectangular-btn ml-2" 
+                           onclick="return confirm('¿Estás seguro de que quieres eliminar este producto?')">
+                           <i class="fa fa-trash"></i> Eliminar
+                        </a>
                     </div>
                 </div>
                 {% endfor %}
             </div>
         </div>
     </div>
+</div> <div class="modal fade" id="newProductModal" tabindex="-1" aria-labelledby="newProductModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="newProductModalLabel">Agregar Nuevo Producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <form action="{{ url_for('create_product') }}" method="POST" enctype="multipart/form-data">
+        <div class="modal-body">
+            
+            <div class="form-group mb-3">
+                <label for="new-product-name" class="form-label"><strong>Nombre</strong></label>
+                <input type="text" class="form-control" id="new-product-name" name="name" required>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label for="new-product-category" class="form-label"><strong>Categoría</strong></label>
+                        <select class="form-control" id="new-product-category" name="category" required>
+                            <option value="Celular">Celular</option>
+                            <option value="Accesorio">Accesorio</option>
+                            <option value="Chip">Chip</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label for="new-product-price" class="form-label"><strong>Precio (Ej: 150.00)</strong></label>
+                        <input type="number" step="0.01" class="form-control" id="new-product-price" name="price" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label for="new-product-stock" class="form-label"><strong>Stock (Ej: 10)</strong></label>
+                        <input type="number" class="form-control" id="new-product-stock" name="stock" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="new-product-description" class="form-label"><strong>Descripción</strong></label>
+                <textarea class="form-control" id="new-product-description" name="description" rows="3"></textarea>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="new-product-image" class="form-label"><strong>Imagen del Producto</strong></label>
+                <input type="file" class="form-control" id="new-product-image" name="image" accept="image/png, image/jpeg" required>
+            </div>
+            
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <button type="submit" class="btn btn-primary">Agregar Producto</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editProductModalLabel">Editar Producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <form id="editProductForm" method="POST" enctype="multipart/form-data">
+        <div class="modal-body">
+            
+            <div class="form-group mb-3">
+                <label for="edit-product-name" class="form-label"><strong>Nombre</strong></label>
+                <input type="text" class="form-control" id="edit-product-name" name="name" required>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label for="edit-product-category" class="form-label"><strong>Categoría</strong></label>
+                        <select class="form-control" id="edit-product-category" name="category" required>
+                            <option value="Celular">Celular</option>
+                            <option value="Accesorio">Accesorio</option>
+                            <option value="Chip">Chip</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label for="edit-product-price" class="form-label"><strong>Precio</strong></label>
+                        <input type="number" step="0.01" class="form-control" id="edit-product-price" name="price" required>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group mb-3">
+                        <label for="edit-product-stock" class="form-label"><strong>Stock</strong></label>
+                        <input type="number" class="form-control" id="edit-product-stock" name="stock" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="edit-product-description" class="form-label"><strong>Descripción</strong></label>
+                <textarea class="form-control" id="edit-product-description" name="description" rows="3"></textarea>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="edit-product-image" class="form-label"><strong>Cambiar Imagen (Opcional)</strong></label>
+                <input type="file" class="form-control" id="edit-product-image" name="image" accept="image/png, image/jpeg">
+                <small class="text-muted">Deja esto en blanco si no quieres cambiar la imagen actual.</small>
+            </div>
+            
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const resetButton = document.getElementById('resetButton');
 
+    function filterProducts() {
+        var input = document.getElementById('product-search-input');
+        var filter = input.value.toLowerCase();
+        var productList = document.getElementById('product-list');
+        var items = productList.getElementsByClassName('product-list-item');
+        
+        for (var i = 0; i < items.length; i++) {
+            var h5 = items[i].getElementsByTagName('h5')[0];
+            if (h5) {
+                var txtValue = h5.textContent || h5.innerText;
+                if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                    items[i].style.display = "";
+                } else {
+                    items[i].style.display = "none";
+                }
+            }
+        }
+    }
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        
+
+        const resetButton = document.getElementById('resetButton');
         if (resetButton) {
             resetButton.addEventListener('click', () => {
                 window.location.reload();
             });
         }
+
+
+        const toggleBlurBtn = document.getElementById('toggleBlurBtn');
+        const blurElements = document.querySelectorAll('.blur-text');
+        const icon = toggleBlurBtn.querySelector('i');
+
+        if (toggleBlurBtn) {
+            toggleBlurBtn.addEventListener('click', () => {
+                blurElements.forEach(el => {
+                    el.classList.toggle('blur-text'); 
+                });
+                
+
+                if (icon.classList.contains('fa-eye')) {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        }
+
+
+        var editProductModal = document.getElementById('editProductModal');
+        if (editProductModal) {
+            editProductModal.addEventListener('show.bs.modal', function (event) {
+                
+                var button = event.relatedTarget;
+                
+                var productId = button.getAttribute('data-product-id');
+                var productName = button.getAttribute('data-product-name');
+                var productCategory = button.getAttribute('data-product-category');
+                var productDescription = button.getAttribute('data-product-description');
+                var productPrice = button.getAttribute('data-product-price');
+                var productStock = button.getAttribute('data-product-stock');
+                
+                var modalForm = document.getElementById('editProductForm');
+                var modalNameInput = editProductModal.querySelector('#edit-product-name');
+                var modalCategoryInput = editProductModal.querySelector('#edit-product-category');
+                var modalDescriptionInput = editProductModal.querySelector('#edit-product-description');
+                var modalPriceInput = editProductModal.querySelector('#edit-product-price');
+                var modalStockInput = editProductModal.querySelector('#edit-product-stock');
+                
+                modalForm.action = '/product/edit/' + productId;
+                
+                modalNameInput.value = productName;
+                modalCategoryInput.value = productCategory;
+                modalDescriptionInput.value = productDescription;
+                modalPriceInput.value = productPrice;
+                modalStockInput.value = productStock;
+            });
+        }
     });
 </script>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>

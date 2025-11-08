@@ -6,33 +6,66 @@
 <div class="container mt-4">
     <h2>Diagnóstico IA</h2>
     <p><strong>Observación ingresada:</strong> {{ entrada }}</p>
+
     <div class="table-responsive mt-3">
-        <table class="table table-bordered">
-            <thead class="table-light">
-                <tr>
-                    <th>#</th>
+        <table class="table align-middle shadow-sm">
+            <thead class="custom-table-header">
+                <tr class="text-center">
                     <th>ID Orden</th>
                     <th>Observaciones</th>
                     <th>Post Detalles</th>
                     <th>Similitud</th>
+                    <th>Orden</th>
                 </tr>
             </thead>
             <tbody>
                 {% for r in resultados %}
                 <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ r.id }}</td>
+                    <td class="fw-semibold">{{ r.id }}</td>
                     <td>{{ r.observations }}</td>
                     <td>{{ r.post_details }}</td>
-                    <td class="score text-success fw-bold">{{ r.score }}</td>
+                    <td class="text-success fw-bold text-center">{{ r.score }}</td>
+                    <td class="text-center">
+                        <a href="{{ url_for('edit_order', repair_order_id=r.id) }}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye"></i> Ver Orden
+                        </a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+    <style>
+        /* Color personalizado del encabezado */
+        .custom-table-header {
+            background-color: #0d6efd; /* azul */
+            color: white;
+        }
+
+        /* redondeo de esquinas */
+        .custom-table-header th:first-child {
+            border-top-left-radius: 10px;
+        }
+
+        .custom-table-header th:last-child {
+            border-top-right-radius: 10px;
+        }
+
+        /* Quita líneas de rectangulo*/
+        .table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+    </style>
     </div>
+
     <div class="mt-3 d-flex justify-content-between">
-        <a href="{{ url_for('all_orders') }}" class="btn btn-primary">Ver todas las órdenes</a>
-        <button class="btn btn-danger" onclick="window.close()">Cerrar</button>
+        <a href="{{ url_for('all_orders') }}" class="btn btn-primary">
+            <i class="fas fa-list"></i> Ver todas las órdenes
+        </a>
+        <button class="btn btn-danger" onclick="window.close()">
+            <i class="fas fa-times"></i> Cerrar
+        </button>
     </div>
 </div>
 {% endblock %}

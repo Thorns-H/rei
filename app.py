@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 from flask_caching import Cache
 from dotenv import load_dotenv
 from datetime import datetime
+import calendar
 from typing import Optional
 import threading
 import user_agents
@@ -24,8 +25,8 @@ import csv
 import io
 
 from modules.db_connection import get_connection
-from modules.db_connection import new_note, get_notes
-from modules.db_connection import get_products
+from modules.db_connection import new_note, get_notes, get_note_by_id, update_note, remove_note
+from modules.db_connection import get_products, new_product, get_product_by_id, update_product, delete_product, sell_product
 from modules.db_connection import get_parts_by_name
 from modules.db_connection import new_repair_order, update_repair_order, get_repair_order, validate_repair_order, delete_repair_order, get_all_repair_orders, get_unfinished_repair_orders
 from modules.db_connection import new_order_media, get_order_media, delete_order_media
@@ -35,6 +36,7 @@ from modules.backup_implementation import auto_backup_thread, perform_backup
 from modules.email_handlers import generate_temp_email
 
 from modules.image_handlers import allowed_file, compress_image
+from werkzeug.utils import secure_filename
 
 from modules.cache_implementation import start_cache_updater, load_brands_from_cache, save_brands_to_cache, fetch_brands_from_api
 
@@ -210,13 +212,46 @@ def create_note():
     new_note(current_user.id, title, content, created_at, remove_at)
     return jsonify({'message': 'Nota creada exitosamente'}), 200
 
-@app.route('/delete_note', methods=['POST'])
+
+@app.route('/notes/edit/<int:note_id>', methods=['POST'])
 @login_required
-def delete_note():
-    # Nota: la función remove_note no estaba definida en el original; asumo que quieres eliminar por id
-    note_id = request.form.get('note_id')
-    # Implementar eliminación si existe una función en modules.db_connection (no incluida aquí)
-    return jsonify({'message': 'Nota eliminada'}), 200
+def edit_note_post(note_id):
+    
+    note = get_note_by_id(note_id)
+    if not note or note['user_id'] != current_user.id:
+        flash('No tienes permiso para editar esta nota.', 'danger')
+        return redirect(url_for('notes'))
+
+    title = request.form.get('title')
+    content = request.form.get('content')
+    remove_at = request.form.get('remove_at')
+    update_note(note_id, title, content, remove_at)
+    
+    return redirect(url_for('notes'))
+
+@app.route('/notes/delete/<int:note_id>')
+@login_required
+def delete_note_route(note_id):
+
+    note = get_note_by_id(note_id)
+    if not note:
+        flash('No se encontró la nota.', 'danger')
+        return redirect(url_for('notes'))
+    
+    # Solo el usuario que creó la nota puede eliminarla
+    if note['user_id'] != current_user.id:
+        flash('No tienes permiso para eliminar esta nota.', 'danger')
+        return redirect(url_for('notes'))
+
+    try:
+        remove_note(note_id)
+        flash('Nota eliminada con éxito.', 'success')
+    except Exception as e:
+        flash(f'Error al eliminar la nota: {e}', 'danger')
+    
+    return redirect(url_for('notes'))
+
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login() -> Response:
@@ -469,12 +504,21 @@ def order_stats() -> dict:
         current_year = datetime.now().year
         current_month = datetime.now().month
         start_date = datetime(current_year, current_month, 1).strftime('%Y-%m-%d')
-        end_date = datetime(current_year, current_month, 28).strftime('%Y-%m-%d')  # Para asegurar que el mes se termine en 28
+        
+
+        last_day_num = calendar.monthrange(current_year, current_month)[1]
+        end_date = datetime(current_year, current_month, last_day_num).strftime('%Y-%m-%d')
+
+        # Añadimos la hora final para incluir el último día
+        end_date = f"{end_date} 23:59:59"
+
+    else:
+        end_date = f"{end_date} 23:59:59"
 
     connection = get_connection()
     cursor = connection.cursor()
 
-    # Filtrado de datos por rango de fechas
+
     cursor.execute("""
         SELECT 
             cost, 
@@ -493,6 +537,7 @@ def order_stats() -> dict:
             'date': record[2].strftime('%Y-%m-%d %H:%M:%S')
         } for record in delivered_records
     ]
+
 
     cursor.execute("""
         SELECT 
@@ -531,6 +576,128 @@ def order_stats() -> dict:
         'deliveredRecords': delivered_data,
         'pendingRecords': pending_data
     })
+
+# ----- productos ---------
+
+@app.route('/product/create', methods=['POST'])
+@login_required
+def create_product():
+    if 'image' not in request.files:
+        flash('No se seleccionó ningún archivo de imagen', 'danger')
+        return redirect(url_for('index'))
+        
+    file = request.files['image']
+    
+    if file.filename == '':
+        flash('No se seleccionó ningún archivo de imagen', 'danger')
+        return redirect(url_for('index'))
+
+    if file and allowed_file(file.filename):
+        
+        name = request.form.get('name')
+        category = request.form.get('category')
+        description = request.form.get('description')
+        price = float(request.form.get('price'))
+        stock = int(request.form.get('stock'))
+        
+        
+        filename = secure_filename(file.filename)
+        
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        unique_filename = f"prod_{timestamp}_{filename}"
+        
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename) 
+        compressed_path = file_path 
+        
+        file.save(file_path)
+        compress_image(file_path, compressed_path, 800) 
+        
+
+        final_image_folder = os.path.join('static', 'images')
+        final_image_path = os.path.join(final_image_folder, unique_filename)
+        
+        
+        os.rename(compressed_path, final_image_path)
+        
+        image_db_name = unique_filename 
+
+        try:
+            new_product(name, image_db_name, category, description, price, stock)
+            flash('Producto creado exitosamente.', 'success')
+        except Exception as e:
+            flash(f'Error al crear el producto: {e}', 'danger')
+            
+    return redirect(url_for('index'))
+
+
+@app.route('/product/edit/<int:product_id>', methods=['POST'])
+@login_required
+def edit_product(product_id):
+    
+    name = request.form.get('name')
+    category = request.form.get('category')
+    description = request.form.get('description')
+    price = float(request.form.get('price'))
+    stock = int(request.form.get('stock'))
+    
+    image_db_name = None 
+
+
+    if 'image' in request.files:
+        file = request.files['image']
+        if file and file.filename != '' and allowed_file(file.filename):
+
+            
+            filename = secure_filename(file.filename)
+            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+            unique_filename = f"prod_{timestamp}_{filename}"
+            
+            final_image_folder = os.path.join('static', 'images')
+            final_image_path = os.path.join(final_image_folder, unique_filename)
+
+            temp_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+            file.save(temp_path)
+            compress_image(temp_path, final_image_path, 800) 
+            os.remove(temp_path) 
+            
+            image_db_name = unique_filename 
+            
+    try:
+        update_product(product_id, name, category, description, price, stock, image_db_name)
+        flash('Producto actualizado con éxito.', 'success')
+    except Exception as e:
+        flash(f'Error al actualizar el producto: {e}', 'danger')
+        
+    return redirect(url_for('index'))
+
+
+@app.route('/product/delete/<int:product_id>')
+@login_required
+def delete_product_route(product_id):
+    try:
+        delete_product(product_id)
+        flash('Producto eliminado con éxito.', 'success')
+    except Exception as e:
+        flash(f'Error al eliminar el producto: {e}', 'danger')
+    
+    return redirect(url_for('index'))
+
+@app.route('/product/sell/<int:product_id>')
+@login_required
+def sell_product_route(product_id):
+    try:
+        
+        success = sell_product(product_id, current_user.id)
+        
+        if success:
+            flash('¡Venta registrada! El stock ha sido actualizado.', 'success')
+        else:
+            flash('El producto está agotado, no se puede vender.', 'danger')
+            
+    except Exception as e:
+        flash(f'Error al procesar la venta: {e}', 'danger')
+    
+    return redirect(url_for('index'))
 
 # --- IA ---
 
@@ -680,7 +847,7 @@ if __name__ == '__main__':
         """
         start_cache_updater()
         threading.Thread(target=auto_backup_thread, daemon=True).start()
-        app.run(host = '0.0.0.0', port = 5050, debug = True)
+        app.run(host = '0.0.0.0', port = 8000, debug = True)
         
     except KeyboardInterrupt:
         exit()
