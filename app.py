@@ -210,7 +210,7 @@ def create_note():
     remove_at = request.form.get('remove_at')
     created_at = datetime.now()
     new_note(current_user.id, title, content, created_at, remove_at)
-    return jsonify({'message': 'Nota creada exitosamente'}), 200
+    return redirect(url_for('notes'))
 
 
 @app.route('/notes/edit/<int:note_id>', methods=['POST'])
