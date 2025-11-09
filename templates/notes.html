@@ -13,35 +13,116 @@
     </div>
 
     <div class="notes-container">
-        {% for note in notes %}
-        <div class="card mb-4 note-card">
-            <div class="card-body">
-                <div class="note-left-content">
-                    <h5 class="card-title">{{ note.title }}</h5>
-                    <p class="card-text">{{ note.content }}</p>
-                </div>
-                <p class="note-meta">
-                    <small>Creada el: {{ note.created_at.strftime('%d de %B, %Y') }}</small>
-                    {% if note.remove_at %}
-                    <br>
-                    <small>Eliminada el: {{ note.remove_at.strftime('%d de %B, %Y') }}</small>
-                    {% endif %}
-                </p>
-                <div class="note-user-info d-flex align-items-center mt-3">
-                    <img src="{{ url_for('static', filename='images/' + note.user_profile_picture) }}" alt="Foto de perfil" class="rounded-circle profile-picture" width="30" height="30">
-                    <div class="note-user-name ml-3" style="font-size: 0.85rem;">
-                        <strong>{{ note.user_name }}</strong>
+            {% for note in notes %}
+            
+            <div class="card mb-4 note-card">
+                <div class="card-body">
+                    <div class="note-left-content">
+                        <h5 class="card-title">{{ note.title }}</h5>
+                        <p class="card-text">{{ note.content }}</p>
                     </div>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <div class="note-buttons">
-                        <a href="/notes/edit/{{ note.note_id }}" class="btn btn-warning btn-sm">Editar</a>
-                        <a href="/notes/delete/{{ note.note_id }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de que quieres eliminar esta nota?')">Eliminar</a>
+                    <p class="note-meta mt-3"> <small>Creada el: {{ note.created_at.strftime('%d de %B, %Y') }}</small>
+                        {% if note.remove_at %}
+                        <br>
+                        <small>Eliminada el: {{ note.remove_at.strftime('%d de %B, %Y') }}</small>
+                        {% endif %}
+                    </p>
+                    <div class="note-user-info d-flex align-items-center mt-3">
+                        <img src="{{ url_for('static', filename='images/' + note.user_profile_picture) }}" alt="Foto de perfil" class="rounded-circle profile-picture" width="30" height="30">
+                        <div class="note-user-name ml-3" style="font-size: 0.85rem;">
+                            <strong>{{ note.user_name }}</strong>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        
+                        {% if current_user.id == note.user_id %}
+                        <div class="note-buttons">
+                            <button type="button" class="btn btn-warning btn-sm" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editNoteModal"
+                                data-note-id="{{ note.note_id }}"
+                                data-note-title="{{ note.title }}"
+                                data-note-content="{{ note.content }}"
+                                data-note-remove="{{ note.remove_at.strftime('%Y-%m-%d') if note.remove_at else '' }}">
+                                Editar
+                            </button>
+                            <a href="/notes/delete/{{ note.note_id }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de que quieres eliminar esta nota?')">Eliminar</a>
+                        </div>
+                        {% endif %}
+                        
                     </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
 </div>
+<div class="modal fade" id="editNoteModal" tabindex="-1" aria-labelledby="editNoteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editNoteModalLabel">Editar Nota</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <form id="editNoteForm" method="POST">
+        <div class="modal-body">
+            <div class="form-group mb-3">
+                <label for="edit-title" class="form-label"><strong>Título</strong></label>
+                <input type="text" class="form-control" id="edit-title" name="title" required>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="edit-content" class="form-label"><strong>Contenido</strong></label>
+                <textarea class="form-control" id="edit-content" name="content" rows="8" required></textarea>
+            </div>
+            
+            <div class="form-group mb-3">
+                <label for="edit-remove_at" class="form-label"><strong>Fecha de Eliminación (Opcional)</strong></label>
+                <input type="date" class="form-control" id="edit-remove_at" name="remove_at">
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var editNoteModal = document.getElementById('editNoteModal');
+    
+    // Escucha cuando el modal esté a punto de mostrarse
+    editNoteModal.addEventListener('show.bs.modal', function (event) {
+        
+        // Obtiene el botón que disparó el modal
+        var button = event.relatedTarget;
+        
+        // Extrae los datos de los atributos data-* del botón
+        var noteId = button.getAttribute('data-note-id');
+        var noteTitle = button.getAttribute('data-note-title');
+        var noteContent = button.getAttribute('data-note-content');
+        var noteRemoveAt = button.getAttribute('data-note-remove');
+        
+        // Busca el formulario y los inputs dentro del modal
+        var modalForm = document.getElementById('editNoteForm');
+        var modalTitleInput = editNoteModal.querySelector('#edit-title');
+        var modalContentInput = editNoteModal.querySelector('#edit-content');
+        var modalRemoveAtInput = editNoteModal.querySelector('#edit-remove_at');
+        
+        // Actualiza la URL 'action' del formulario
+        modalForm.action = '/notes/edit/' + noteId;
+        
+        // Rellena los campos
+        modalTitleInput.value = noteTitle;
+        modalContentInput.value = noteContent;
+        modalRemoveAtInput.value = noteRemoveAt;
+    });
+});
+</script>
+
 {% endblock %}
